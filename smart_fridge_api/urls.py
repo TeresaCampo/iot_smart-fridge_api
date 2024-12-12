@@ -16,13 +16,10 @@ urlpatterns = [
     path('fridges/<int:pk_fridge>/expiringProducts', views.FridgeExpiringProduct.as_view(), name='fridge_expiring_product'),
     #delete /fridges/<int:pk_fridge>/products/<str:barcode>/<str:expire_date>   -->delete a product(barcode,expire_date) of a fridge
     path('fridges/<int:pk_fridge>/products/<str:barcode>/<str:expire_date>', views.FridgeProductDetail.as_view(), name='fridge_product_detail'),
-
-
+    #get /fridges/<int:pk>/parameters --> retrive last 20 sampled parameters
+    #post /fridges/<int:pk>/parameters -->post a new set of parameters
+    path('fridges/<int:pk_fridge>/parameters', views.FridgeParameter.as_view(), name='fridge_parameter'),
 ]
-
-#post /fridges/<int:pk>/parameters (umidità e temperatura)
-#get /fridges/<int:pk>/parameters (umidità e temperatura)
-
 #login
 
 
