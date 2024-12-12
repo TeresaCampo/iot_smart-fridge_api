@@ -9,38 +9,48 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Fridge, Product
 from .serializers import FridgeSerializer, ProductSerializer
+from drf_yasg.utils import swagger_auto_schema
 
-def index(request):
-    return HttpResponse("This is the smart fridge API.")
-
-#                           for admin
-#get fridges/               --> read all the fridges in the database
-#post fridges/              --> insert a new fridge in the database
+#for admin
 class FridgeList(APIView):
+    @swagger_auto_schema(
+        operation_description="Retrieve all the fridges from the database",
+        responses={200: 'Ok'}
+    )
     def get(self, request):
         fridges = Fridge.objects.all()
         serializer = FridgeSerializer(fridges, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
+    @swagger_auto_schema(
+        operation_description="Insert a product in a fridge",
+        request_body=FridgeSerializer,
+        responses={201: 'Created', 400: 'Bad Request'}
+    )
     def post(self, request):
             serializer=FridgeSerializer(data=request.data)
 
             if serializer.is_valid():
                 serializer.save()
-                return Response({"status": "success"}, status=status.HTTP_201_CREATED)
+                return Response(status=status.HTTP_201_CREATED)
             else:
-                return Response({"status":"error"}, status= status.HTTP_400_BAD_REQUEST)
+                return Response(status= status.HTTP_400_BAD_REQUEST)
 
-#get /fridges/<int:pk>/   -->retrieve info about a specific fridge(id,address,city,country)
 class FridgeDetail(APIView):
+    @swagger_auto_schema(
+        operation_description="Retrive info about a fridge",
+        responses={200: 'Ok', 404: "Fridge doesn't exist"}
+    )
     def get(self, request, pk_fridge):
         fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
         serializer = FridgeSerializer(fridge)
         return Response(serializer.data,status=status.HTTP_200_OK)
 
-#post /fridges/<int:pk>/products   --> insert a product in a fridge
-#get /fridges/<int:pk>/products    --> retieve all the products in a fridge
 class FridgeProductList(APIView):
+    @swagger_auto_schema(
+        operation_description="Insert a new product in a fridge.If fridge_id is different from the one in the url, the url one is considered the valid one",
+        request_body=ProductSerializer,
+        responses={201: 'Created', 404:"The fridge doesn't exist", 400: 'Bad Request'}
+    )
     def post(self,request,pk_fridge):
         fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
 
@@ -50,20 +60,25 @@ class FridgeProductList(APIView):
 
         if serializer.is_valid():
             serializer.save()
-            return Response({'status':'success'}, status=status.HTTP_201_CREATED)
+            return Response(status=status.HTTP_201_CREATED)
         else:
-            return Response({'status':'error'}, status=status.HTTP_400_BAD_REQUEST)
-    
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+    @swagger_auto_schema(
+        operation_description="Retrieve all the products from a fridge",
+        responses={200: 'Ok', 404:"The fridge doesn't exist"}
+    )
     def get(self,request,pk_fridge):
+        fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
+
         product = Product.objects.filter(fridge=pk_fridge)
         serializer = ProductSerializer(product, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-#put /fridges/<int:pk_fridge>/products/<str:barcode>/<str:expire_date>   -->update a product(barcode,expire_date) from a fridge
-    #in the body put all the data of the products
-    #if fridge_id is different from the one in the url, the url one is considered the valid one
-#delete /fridges/<int:pk_fridge>/products/<str:barcode>/<str:expire_date>   -->delete a product(barcode,expire_date) from a fridge
 class FridgeProductDetail(APIView):
+    @swagger_auto_schema(
+        operation_description="Delete a product from a fridge. If fridge_id is different from the one in the url, the url one is considered the valid one.",
+        responses={404:"The fridge or the product don't exist"}
+    )
     def delete(self,request,pk_fridge,barcode,expire_date):
         #check if fridge exists
         fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
@@ -76,6 +91,11 @@ class FridgeProductDetail(APIView):
         #delete the object
         product_to_be_deleted.delete()
         return Response({'status': 'success', 'message': 'Product deleted successfully.'}, status=status.HTTP_200_OK)
+    @swagger_auto_schema(
+        operation_description="Update a product of a fridge.If fridge_id is different from the one in the url, the url one is considered the valid one",
+        request_body=ProductSerializer,
+        responses={201: 'Created', 404:"The fridge or the product don't exist", 400: 'Bad Request'}
+    )
     def put(self,request,pk_fridge,barcode,expire_date):
         #check if fridge exists
         fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
@@ -98,8 +118,11 @@ class FridgeProductDetail(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-#get /fridges/<int:pk>/expiringProducts    -->retieve all the expring products in a fridge
 class FridgeExpiringProduct(APIView):
+    @swagger_auto_schema(
+        operation_description="Retrive all the expiring products in a fridge",
+        responses={200: 'Ok', 404: "Fridge does't exist"}
+    )
     def get(self, request,pk_fridge):
         existing_fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
         tomorrow = date.today() + timedelta(days=1)
@@ -108,13 +131,20 @@ class FridgeExpiringProduct(APIView):
         serializer = ProductSerializer(product, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-#get /fridges/<int:pk>/parameters --> retrive last 20 sampled parameters
-#post /fridges/<int:pk>/parameters -->post a new set of parameters
 class FridgeParameter(APIView):
+    @swagger_auto_schema(
+        operation_description="Retrive the last (most recent) 20 sampled parameters",
+        responses={200: 'Ok', 404: "Fridge does't exist"}
+    )
     def get(self, request, pk_fridge):
         existing_fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
         parameters=Parameter.objects.filter(fridge=existing_fridge).order_by('sampling_date')[:20]
         return Response(ParameterSerializer(parameters, many=True).data, status=status.HTTP_200_OK)
+    @swagger_auto_schema(
+        operation_description="Post a new set of parameters for a fridge.If fridge_id is different from the one in the url, the url one is considered the valid one",
+        request_body=ParameterSerializer,
+        responses={201: 'Created', 400: 'Bad Request',404:"Fridge does't exist"}
+    )
     def post(self,request, pk_fridge):
         existing_fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
         data=request.data.copy()
@@ -123,9 +153,9 @@ class FridgeParameter(APIView):
 
         if serializer.is_valid():
             serializer.save()
-            return Response({'status':'success'}, status=status.HTTP_201_CREATED)
+            return Response(status=status.HTTP_201_CREATED)
         else:
-            return Response({'status':'error'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(status=status.HTTP_400_BAD_REQUEST)
    
 
         

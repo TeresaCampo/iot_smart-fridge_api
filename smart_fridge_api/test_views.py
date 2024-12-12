@@ -35,7 +35,6 @@ class FridgeListTestCase(APITestCase):
         fridge = Fridge.objects.get(fridge_id=data['fridge_id'])
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["status"], "success")
         self.assertEqual(FridgeSerializer(fridge).data,data)
 
     def test_post_fridges_invalid_data1(self):
@@ -48,7 +47,6 @@ class FridgeListTestCase(APITestCase):
         response = self.client.post(self.url, data)
        
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data["status"], "error")
         self.assertFalse(Fridge.objects.filter(fridge_id=data['fridge_i']).exists())
 
     def test_post_fridges_already_existing(self):
@@ -63,7 +61,6 @@ class FridgeListTestCase(APITestCase):
         serializer=FridgeSerializer(data=data)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data["status"], "error")
 
 class FridgeDetailTestCase(APITestCase):
     def setUp(self):
@@ -122,7 +119,6 @@ class FridgeProductListTestCase(APITestCase):
         response=self.client.post(url, data)
 
         self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data['status'],'error')
         self.assertFalse(Product.objects.filter(barcode='1234567890123').exists())
     
     def test_post_new_incomplete_product(self):
@@ -133,7 +129,6 @@ class FridgeProductListTestCase(APITestCase):
         response=self.client.post(url, data, format='json')
 
         self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data['status'],'error')
         self.assertFalse(Product.objects.filter(barcode='1234567890123').exists()) 
 
     def test_post_new_product_associated_to_different_fridge(self):
@@ -145,7 +140,6 @@ class FridgeProductListTestCase(APITestCase):
         response=self.client.post(url, data, format='json')
 
         self.assertEqual(response.status_code,status.HTTP_201_CREATED)
-        self.assertEqual(response.data['status'],'success')
         self.assertEqual(Product.objects.get(barcode='1234567890123').fridge, self.fridge1)
     
     def test_get_all_products(self):
@@ -374,6 +368,15 @@ class FridgeParameterTestCase(APITestCase):
         new_parameters_set['humidity']=None
         new_parameters_set['temperature']=None
         self.assertEqual( new_parameters_set,product_just_created)
+    def test_post_no_body(self):
+        url = reverse('fridge_parameter', kwargs={'pk_fridge': self.fridge.fridge_id})
+        new_parameters_set={
+            'fridge':self.fridge.fridge_id,
+            'sampling_date':'2024-12-12T21:56'
+        }
+        response=self.client.post(url)
+
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
         
 
 
