@@ -25,10 +25,10 @@ SECRET_KEY = 'django-insecure-i-af-4$i5i-&@v=6l_51+x1efj+^zbc24#o991l9*5luq-vh*k
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+#ALLOWED_HOSTS = ['172.20.10.4', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 # Application definition
-
 INSTALLED_APPS = [
     'smart_fridge_api',
     'rest_framework',

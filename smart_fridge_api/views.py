@@ -12,7 +12,7 @@ from .serializers import FridgeSerializer, ProductSerializer
 
 def index(request):
     return HttpResponse("This is the smart fridge API.")
-
+#                           for admin
 #get fridges/               --> read all the fridges in the database
 #post fridges/              --> insert a new fridge in the database
 class FridgeList(APIView):
@@ -30,7 +30,7 @@ class FridgeList(APIView):
             else:
                 return Response({"status":"error"}, status= status.HTTP_400_BAD_REQUEST)
 
-#get /fridges/<int:pk>/   -->retrieve info about a specific fridge
+#get /fridges/<int:pk>/   -->retrieve info about a specific fridge(id,address,city,country)
 class FridgeDetail(APIView):
     def get(self, request, pk_fridge):
         fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
@@ -38,8 +38,8 @@ class FridgeDetail(APIView):
         return Response(serializer.data,status=status.HTTP_200_OK)
 
 #post /fridges/<int:pk>/products   --> insert a product in a fridge
-#get /fridges/<int:pk>/products    -->retieve all the products in a fridge
-class FridgeProduct(APIView):
+#get /fridges/<int:pk>/products    --> retieve all the products in a fridge
+class FridgeProductList(APIView):
     def post(self,request,pk_fridge):
         fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
 
@@ -54,16 +54,31 @@ class FridgeProduct(APIView):
             return Response({'status':'error'}, status=status.HTTP_400_BAD_REQUEST)
     
     def get(self,request,pk_fridge):
-        product = Product.objects.all()
+        product = Product.objects.filter(fridge=pk_fridge)
         serializer = ProductSerializer(product, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
+#delete /fridges/<int:pk_fridge>/products/<str:barcode>/<str:expire_date>   -->delete a product(barcode,expire_date) of a fridge
+class FridgeProductDetail(APIView):
+    def delete(self,request,pk_fridge,barcode,expire_date):
+        #check if fridge exists
+        fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
 
-#get /fridges/<int:pk>/expiringProducts    -->retieve all the products in a fridge
+        #check if product exists
+        product_to_be_deleted = Product.objects.filter(fridge=fridge, barcode=barcode, expire_date=expire_date).first()
+        if product_to_be_deleted is None:
+            return Response({'message': 'Product is not present in the database.'}, status=status.HTTP_404_NOT_FOUND)
+        
+        #delete the object
+        product_to_be_deleted.delete()
+        return Response({'status': 'success', 'message': 'Product deleted successfully.'}, status=status.HTTP_200_OK)
+
+#get /fridges/<int:pk>/expiringProducts    -->retieve all the expring products in a fridge
 class FridgeExpiringProduct(APIView):
     def get(self, request,pk_fridge):
-        fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
+        existing_fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
         tomorrow = date.today() + timedelta(days=1)
         
-        product = Product.objects.filter(expire_date=tomorrow)
+        product = Product.objects.filter(fridge=existing_fridge,expire_date=tomorrow)
         serializer = ProductSerializer(product, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
