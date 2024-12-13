@@ -14,7 +14,7 @@ conda create -n iot_server python=3.12.4
 
 ### 3. Rendere il proprio ip statico sulla rete locale(hotspot) per far funzionare MITApp Inventor
 
-<img src="readme_resources/static_ipv4.png" alt="Come assegnare ipv4 fisso al proprio pc dalle impostazioni (Ubuntu)" width="300" height="200">
+<img src="readme_resources/static_ipv4.png" alt="Come assegnare ipv4 fisso al proprio pc dalle impostazioni (Ubuntu)" width="600">
 <br>
 ->Impostare come ipv4 address: 172.20.10.4
 
