@@ -74,6 +74,8 @@ WSGI_APPLICATION = 'iot_smart_fridge.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+'''
+mysql
 
 DATABASES = {
     'default': {
@@ -83,7 +85,15 @@ DATABASES = {
         'PASSWORD': 'djangoProduction',       # Password del database
         'HOST': 'localhost'                  # Indirizzo del server, di solito localhost
     }
+}'''
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',  # il file del database si trova nella root del progetto
+    }
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
