@@ -1,4 +1,4 @@
-# iot_smart_fridge_api
+# SMART FRIDGE API
 
 ### 1. creare ambiente virtuale con conda
 
