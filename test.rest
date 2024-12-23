@@ -5,10 +5,27 @@ Content-Type: : application/json
 POST  http://127.0.0.1:8000/api/signup
 Content-Type: application/json
 
-{"username":"testtttttt", "password": "Ciao","email": "test@gmail.comm", "fridge_id":1 }
+{"first_name":"terry","last_name":"campo", "password": "Ciao","email": "test@gmail.commmaan", "fridge_id":0 }
 
 ###
 POST  http://127.0.0.1:8000/api/login
 Content-Type: application/json
 
 {"username":"test", "password": "Ciao","email": "test@gmail.com" }
+
+###
+POST  http://127.0.0.1:8000/api/signup
+Content-Type: application/json
+
+{"first_name":"terry","last_name":"campo", "password": "Ciao","email": "test@gmail.commm"}
+
+###
+POST  http://127.0.0.1:8000/api/fridges/
+Content-Type: application/json
+
+{
+  "fridge_id": 0,
+  "address": "Viale Pio La Torre 26",
+  "city": "Modena",
+  "country": "Ialy"
+}

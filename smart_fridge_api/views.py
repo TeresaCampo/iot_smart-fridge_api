@@ -2,7 +2,7 @@ from datetime import date, timedelta
 from django.http import HttpResponse
 from rest_framework import viewsets
 from .models import Fridge, Product,Parameter
-from .serializers import FridgeSerializer, ProductSerializer, ParameterSerializer, UserProfileSignUpSerializer, UserSerializer
+from .serializers import FridgeSerializer, ProductSerializer, ParameterSerializer, CustomUserSerializer, CustomUserSignUpSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -161,39 +161,6 @@ class FridgeParameter(APIView):
             return Response(status=status.HTTP_201_CREATED)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-
-@swagger_auto_schema(
-    operation_description="New user signup",
-    method='post',
-    request_body=UserProfileSignUpSerializer,
-    responses={201: 'Created', 400: 'Bad Request', 500: 'Problems with token'}
-)
-@api_view(['POST'])
-def signup(request):
-    user_profile_serialized = UserProfileSignUpSerializer(data=request.data)
-    if user_profile_serialized.is_valid():
-        user_profile = user_profile_serialized.save()
-
-        try:
-            token, created = Token.objects.get_or_create(user=user_profile.user)
-        except Exception as e:
-            return Response(
-                {"error": "Error creating authentication token", "details": str(e)},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-        return Response(
-            {
-                "token": token.key,
-                "user": UserSerializer(user_profile.user).data
-            },
-            status=status.HTTP_201_CREATED
-        )
-    
-    return Response(
-        {"errors": user_profile_serialized.errors},
-        status=status.HTTP_400_BAD_REQUEST
-    )
 '''
 @swagger_auto_schema(
     operation_description="Login function",
@@ -216,3 +183,32 @@ def login(request):
         status=status.HTTP_200_OK
     )
 '''
+@swagger_auto_schema(
+    operation_description="New user signup",
+    method='post',
+    request_body=CustomUserSignUpSerializer,
+    responses={201: 'Created', 400: 'Bad Request', 500: 'Problems with token'}
+)
+@api_view(['POST'])
+def signup(request):
+    user_serialized = CustomUserSignUpSerializer(data=request.data)
+    if user_serialized.is_valid():
+        user = user_serialized.save()
+        try:
+            token, created = Token.objects.get_or_create(user=user)
+        except Exception as e:
+            return Response(
+                {"error": "Error creating authentication token", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        return Response(
+            {
+                "token": token.key,
+                "user": CustomUserSerializer(user).data
+            },
+            status=status.HTTP_201_CREATED
+        )
+    return Response(
+        {"errors": user_serialized.errors},
+        status=status.HTTP_400_BAD_REQUEST
+    )
