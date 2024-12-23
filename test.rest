@@ -1,0 +1,14 @@
+GET  http://127.0.0.1:8000/api/fridges
+Content-Type: : application/json
+
+###
+POST  http://127.0.0.1:8000/api/signup
+Content-Type: application/json
+
+{"username":"testtttttt", "password": "Ciao","email": "test@gmail.comm", "fridge_id":1 }
+
+###
+POST  http://127.0.0.1:8000/api/login
+Content-Type: application/json
+
+{"username":"test", "password": "Ciao","email": "test@gmail.com" }

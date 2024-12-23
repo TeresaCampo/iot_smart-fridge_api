@@ -2,7 +2,7 @@ from datetime import date, timedelta
 from django.http import HttpResponse
 from rest_framework import viewsets
 from .models import Fridge, Product,Parameter
-from .serializers import FridgeSerializer, ProductSerializer, ParameterSerializer
+from .serializers import FridgeSerializer, ProductSerializer, ParameterSerializer, UserProfileSignUpSerializer, UserSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -10,6 +10,11 @@ from rest_framework import status
 from .models import Fridge, Product
 from .serializers import FridgeSerializer, ProductSerializer
 from drf_yasg.utils import swagger_auto_schema
+from django.contrib.auth.models import User
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view
 
 #for admin
 class FridgeList(APIView):
@@ -22,7 +27,7 @@ class FridgeList(APIView):
         serializer = FridgeSerializer(fridges, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
     @swagger_auto_schema(
-        operation_description="Insert a product in a fridge",
+        operation_description="Create a new fridge",
         request_body=FridgeSerializer,
         responses={201: 'Created', 400: 'Bad Request'}
     )
@@ -156,6 +161,58 @@ class FridgeParameter(APIView):
             return Response(status=status.HTTP_201_CREATED)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
-   
 
-        
+@swagger_auto_schema(
+    operation_description="New user signup",
+    method='post',
+    request_body=UserProfileSignUpSerializer,
+    responses={201: 'Created', 400: 'Bad Request', 500: 'Problems with token'}
+)
+@api_view(['POST'])
+def signup(request):
+    user_profile_serialized = UserProfileSignUpSerializer(data=request.data)
+    if user_profile_serialized.is_valid():
+        user_profile = user_profile_serialized.save()
+
+        try:
+            token, created = Token.objects.get_or_create(user=user_profile.user)
+        except Exception as e:
+            return Response(
+                {"error": "Error creating authentication token", "details": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response(
+            {
+                "token": token.key,
+                "user": UserSerializer(user_profile.user).data
+            },
+            status=status.HTTP_201_CREATED
+        )
+    
+    return Response(
+        {"errors": user_profile_serialized.errors},
+        status=status.HTTP_400_BAD_REQUEST
+    )
+'''
+@swagger_auto_schema(
+    operation_description="Login function",
+    method='post',
+    request_body=UserSerializer,
+    responses={200: 'Authenticated', 404: "Login error"}
+)
+@api_view(['POST'])
+def login(request):
+    user=get_object_or_404(User, username=request.data['username'])
+    if not user.check_password(request.data['password']):
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    
+    token, created=Token.objects.get_or_create(user=user)
+    return Response(
+        {
+            'token':token.key,
+            'user': UserSerializer(user).data
+        },
+        status=status.HTTP_200_OK
+    )
+'''

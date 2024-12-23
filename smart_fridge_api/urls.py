@@ -1,3 +1,4 @@
+
 from django.urls import path
 from . import views
 from rest_framework import permissions
@@ -34,6 +35,10 @@ urlpatterns = [
     #get /fridges/<int:pk>/parameters --> retrive last 20 sampled parameters
     #post /fridges/<int:pk>/parameters -->post a new set of parameters
     path('fridges/<int:pk_fridge>/parameters', views.FridgeParameter.as_view(), name='fridge_parameter'),
+    #post /registration
+    path('signup', views.signup, name='user_signup'),
+    #path('login', views.login, name='user_login')
+
 ]
 #login
 

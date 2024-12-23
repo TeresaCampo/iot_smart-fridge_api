@@ -1,4 +1,6 @@
 from django.db import models
+from django.contrib.auth.models import User
+
 
 
 '''
@@ -40,3 +42,9 @@ class Product(models.Model):
     def __str__(self):
             return f"{self.name} (Barcode: {self.barcode}) - Expires on {self.expire_date}"
 
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    fridge = models.ForeignKey(Fridge, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"User '{self.user.username}' associated to fridge {self.fridge.fridge_id}"
