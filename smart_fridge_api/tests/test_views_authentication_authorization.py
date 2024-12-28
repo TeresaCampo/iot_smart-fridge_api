@@ -44,8 +44,8 @@ class LoginViewTestCase(APITestCase):
         #create the user
         self.data={'email':'test@gmail.com', 'first_name': 'TestName', 'last_name':'TestSurname','fridge_id':11, 'password':'debole'}
         url_singup = reverse('user_signup')  
-        response=self.client.post(url_singup,self.data)
-
+        self.client.post(url_singup,self.data)
+        
         self.url=reverse('user_login')
     
     def test_login_succes(self):

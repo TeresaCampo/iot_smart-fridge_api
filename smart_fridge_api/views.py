@@ -1,5 +1,7 @@
 from datetime import date, timedelta
 from django.http import HttpResponse
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework import viewsets
 from .models import Fridge, Product,Parameter
 from .serializers import FridgeSerializer, ProductSerializer, ParameterSerializer, CustomUserSerializer, CustomUserSignUpSerializer, LoginSerializer
@@ -169,6 +171,7 @@ class FridgeParameter(APIView):
     responses={200: 'Authenticated', 401: "Login error"}
 )
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def login(request):
 
     login_data_serialized=LoginSerializer(data=request.data)
@@ -195,6 +198,7 @@ def login(request):
     responses={201: 'Created', 400: 'Bad Request', 500: 'Problems with token'}
 )
 @api_view(['POST'])
+@permission_classes([AllowAny])
 def signup(request):
     user_serialized = CustomUserSignUpSerializer(data=request.data)
     if user_serialized.is_valid():
