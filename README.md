@@ -1,5 +1,7 @@
 # SMART FRIDGE API
 
+## SCARICARE IL PROGETTO IN LOCALE
+
 ### 1. creare ambiente virtuale con conda
 
 ```bash
@@ -12,21 +14,28 @@ conda create -n iot_server python=3.12.4
  pip install -r requirements.txt
 ```
 
-### 3. Rendere il proprio ip statico sulla rete locale(hotspot) per far funzionare MITApp Inventor
+### 3. controllare che tutto funzioni correttamente eseguendo i tests
+
+```bash
+python3 manage.py test smart_fridge_api.tests
+```
+
+## ESEGUIRE IL SERVER SU UN INDIRIZZO IP PUBBLICO
+
+### 1. Rendere il proprio ip statico sulla rete locale(hotspot) per far funzionare MITApp Inventor
 
 <img src="readme_resources/static_ipv4.png" alt="Come assegnare ipv4 fisso al proprio pc dalle impostazioni (Ubuntu)" width="600">
 <br>
-->Impostare come ipv4 address: 172.20.10.4
-
+->Impostare come ipv4 address: 172.20.10.4 (oppure vedi nella tua rete)
 ->Controllare la netmask con ifconfig  
-->Gateway: 172.20.10
+->Gateway: 172.20.10 (opppure vedi nella tua rete)
 
-### 4. eseguire il server
+### 2. eseguire il server
 
 ```bash
 python manage.py runserver 0.0.0.0:8080
 ```
 
-### 5. controllare la documentazione alla pagina /api
+### 3. controllare la documentazione alla pagina /api
 
 http://172.20.10.4:8080/api/

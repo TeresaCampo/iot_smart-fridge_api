@@ -1,6 +1,26 @@
 from rest_framework import serializers
 from .models import Fridge, Product,Parameter, CustomUser
 from rest_framework import serializers
+from rest_framework import serializers
+from django.contrib.auth import authenticate
+from rest_framework.authtoken.models import Token
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True, style={'input_type': 'password'})
+
+    def validate(self, data):
+        email = data.get('email')
+        password = data.get('password')
+
+        if not email or not password:
+            raise serializers.ValidationError("Provide both username and password")
+
+        user = authenticate(username=email, password=password)
+        if user is None:
+            raise serializers.ValidationError("Invalid data")
+        return user
+
 
 class CustomUserSerializer(serializers.ModelSerializer):
     fridge_id = serializers.PrimaryKeyRelatedField(queryset=Fridge.objects.all(), source='fridge', required=False)

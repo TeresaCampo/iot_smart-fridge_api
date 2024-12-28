@@ -37,7 +37,7 @@ urlpatterns = [
     path('fridges/<int:pk_fridge>/parameters', views.FridgeParameter.as_view(), name='fridge_parameter'),
     #post /registration
     path('signup', views.signup, name='user_signup'),
-    #path('login', views.login, name='user_login')
+    path('login', views.login, name='user_login')
 
 ]
 #login

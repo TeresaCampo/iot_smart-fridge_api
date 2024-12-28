@@ -1,7 +1,7 @@
 from rest_framework.test import APITestCase
-from .models import Fridge,Product, Parameter
+from smart_fridge_api.models import Fridge,Product, Parameter
 from django.urls import reverse
-from .serializers import FridgeSerializer, ProductSerializer,ParameterSerializer
+from smart_fridge_api.serializers import FridgeSerializer, ProductSerializer,ParameterSerializer
 from rest_framework import status
 from datetime import datetime, timedelta, date
 import random
