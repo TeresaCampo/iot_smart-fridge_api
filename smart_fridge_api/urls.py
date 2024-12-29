@@ -1,9 +1,15 @@
-
 from django.urls import path
 from . import views
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+
+TokenAuth = openapi.Parameter(
+    'Authorization',
+    openapi.IN_HEADER,
+    description="Token di autorizzazione (ad esempio: 'Token <your_token>')",
+    type=openapi.TYPE_STRING,
+)
 
 #Documentation page header
 schema_view = get_schema_view(
@@ -22,7 +28,7 @@ urlpatterns = [
 
     #get fridges/               --> read all the fridges in the database
     #post fridges/              --> insert a new fridge in the database
-    path('fridges/', views.FridgeList.as_view(), name='fridge_list'),
+    path('fridges/', views.FridgeManager.as_view(), name='fridge_list'),
     #get /fridges/<int:pk>/   -->retrieve info about a specific fridge
     path('fridges/<int:pk_fridge>/', views.FridgeDetail.as_view(), name='fridge_detail'),
     #post /fridges/<int:pk>/products   --> insert a product in a fridge
@@ -38,8 +44,6 @@ urlpatterns = [
     #post /registration
     path('signup', views.signup, name='user_signup'),
     path('login', views.login, name='user_login')
-
 ]
-#login
 
 

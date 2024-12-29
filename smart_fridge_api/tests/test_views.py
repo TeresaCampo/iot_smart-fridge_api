@@ -6,20 +6,14 @@ from rest_framework import status
 from datetime import datetime, timedelta, date
 import random
 from django.utils import timezone
+from .utils import *
 
 
 class FridgeListTestCase(APITestCase):
     def setUp(self):
         self.url = reverse('fridge_list') 
-        #---------------------user authentication
-        #create the fridge
-        self.fridgeUser = Fridge.objects.create(fridge_id=11,address="Viale Pio la Torre 26", city="Modena", country="ITA")
-        #create the user
-        self.data={'email':'test@gmail.com', 'first_name': 'TestName', 'last_name':'TestSurname','fridge_id':11, 'password':'debole'}
-        url_singup = reverse('user_signup')  
-        response=self.client.post(url_singup,self.data)
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + response.data['token'])
-        #---------------------end user authentication
+        #superuser authentication
+        self.client=create_super_user(self.client)
 
     def test_get_fridges(self):
         #create this obgjects in the test database
@@ -76,15 +70,8 @@ class FridgeDetailTestCase(APITestCase):
     def setUp(self):
         self.fridge1 = Fridge.objects.create(fridge_id=1,address="Viale Pio la Torre 26", city="Modena", country="ITA")
         self.serializer=FridgeSerializer(self.fridge1)
-        #---------------------user authentication
-        #create the fridge
-        self.fridgeUser = Fridge.objects.create(fridge_id=11,address="Viale Pio la Torre 26", city="Modena", country="ITA")
-        #create the user
-        self.data={'email':'test@gmail.com', 'first_name': 'TestName', 'last_name':'TestSurname','fridge_id':11, 'password':'debole'}
-        url_singup = reverse('user_signup')  
-        response=self.client.post(url_singup,self.data)
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + response.data['token'])
-        #---------------------end user authentication
+        #user authentication
+        self.client,self.user_fridge=create_normal_user(self.client)
     
     def test_get_existing_fridge(self):
         url = reverse('fridge_detail', kwargs={'pk_fridge':self.fridge1.fridge_id})
@@ -103,15 +90,8 @@ class FridgeProductListTestCase(APITestCase):
     def setUp(self):
         self.fridge1 = Fridge.objects.create(fridge_id=1,address="Viale Pio la Torre 26", city="Modena", country="ITA")
         self.fridge2 = Fridge.objects.create(fridge_id=2,address="Via Teresina Bruchi 50", city="Modena", country="ITA")
-        #---------------------user authentication
-        #create the fridge
-        self.fridgeUser = Fridge.objects.create(fridge_id=11,address="Viale Pio la Torre 26", city="Modena", country="ITA")
-        #create the user
-        self.data={'email':'test@gmail.com', 'first_name': 'TestName', 'last_name':'TestSurname','fridge_id':11, 'password':'debole'}
-        url_singup = reverse('user_signup')  
-        response=self.client.post(url_singup,self.data)
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + response.data['token'])
-        #---------------------end user authentication
+        #user authentication
+        self.client,self.user_fridge=create_normal_user(self.client)
 
     def test_post_new_valid_product(self):
         url = reverse('fridge_product_list', kwargs={'pk_fridge':self.fridge1.fridge_id})
@@ -191,15 +171,9 @@ class FridgeExpiringProductTestCase(APITestCase):
         self.fridge2 = Fridge.objects.create(fridge_id=2,address="Via Teresina Bruchi 50", city="Modena", country="ITA")
         self.product2_1= Product.objects.create(fridge=self.fridge1,barcode="1234567890123", expire_date="2024-12-31",name="Latte")
         self.product2_2= Product.objects.create(fridge=self.fridge1,barcode="1234567890124", expire_date="2024-12-31",name="Latte")
-        #---------------------user authentication
-        #create the fridge
-        self.fridgeUser = Fridge.objects.create(fridge_id=11,address="Viale Pio la Torre 26", city="Modena", country="ITA")
-        #create the user
-        self.data={'email':'test@gmail.com', 'first_name': 'TestName', 'last_name':'TestSurname','fridge_id':11, 'password':'debole'}
-        url_singup = reverse('user_signup')  
-        response=self.client.post(url_singup,self.data)
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + response.data['token'])
-        #---------------------end user authentication
+        #user authentication
+        self.client,self.user_fridge=create_normal_user(self.client)
+
     def test_get_one_expiring_product(self):
         url = reverse('fridge_expiring_product', kwargs={'pk_fridge': self.fridge1.fridge_id})
         response=self.client.get(url)
@@ -229,15 +203,8 @@ class FridgeProductDetailTestCase(APITestCase):
         self.fridge2 = Fridge.objects.create(fridge_id=2,address="Via Teresina Bruchi 50", city="Modena", country="ITA")
         self.product2_1= Product.objects.create(fridge=self.fridge2,barcode="1234567890123", expire_date="2024-12-31",name="Latte")
         self.product1_2= Product.objects.create(fridge=self.fridge2,barcode="1234567890124", expire_date="2024-12-30",name="Cereali")
-        #---------------------user authentication
-        #create the fridge
-        self.fridgeUser = Fridge.objects.create(fridge_id=11,address="Viale Pio la Torre 26", city="Modena", country="ITA")
-        #create the user
-        self.data={'email':'test@gmail.com', 'first_name': 'TestName', 'last_name':'TestSurname','fridge_id':11, 'password':'debole'}
-        url_singup = reverse('user_signup')  
-        response=self.client.post(url_singup,self.data)
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + response.data['token'])
-        #---------------------end user authentication
+        #user authentication
+        self.client,self.user_fridge=create_normal_user(self.client)
 
     #delete
     def test_delete_one_product_not_existing_fridge(self):
@@ -344,15 +311,8 @@ class FridgeParameterTestCase(APITestCase):
                 temperature=random.uniform(-10.0, 10.0), 
                 sampling_date=base_date - timedelta(days=i)  
             )
-        #---------------------user authentication
-        #create the fridge
-        self.fridgeUser = Fridge.objects.create(fridge_id=11,address="Viale Pio la Torre 26", city="Modena", country="ITA")
-        #create the user
-        self.data={'email':'test@gmail.com', 'first_name': 'TestName', 'last_name':'TestSurname','fridge_id':11, 'password':'debole'}
-        url_singup = reverse('user_signup')  
-        response=self.client.post(url_singup,self.data)
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + response.data['token'])
-        #---------------------end user authentication
+        #user authentication
+        self.client,self.user_fridge=create_normal_user(self.client)
 
     #get
     def test_get_first_20_products_not_existing_fridge(self):
@@ -431,8 +391,6 @@ class FridgeParameterTestCase(APITestCase):
         response=self.client.post(url)
 
         self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
-        
-
 
 
 

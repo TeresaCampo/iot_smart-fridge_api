@@ -39,3 +39,8 @@ python manage.py runserver 0.0.0.0:8080
 ### 3. controllare la documentazione alla pagina /api
 
 http://172.20.10.4:8080/api/
+
+## FARE RICHIESTE COME SUPEUTENTE AUTENTICATO
+
+Inserire nell'header della richiesta 'Token 62aa1bd2271eedd587232a3259f262fa5b578d88'
+(Dopo aver fatto pull del progettto perchè il database si è aggiornato)

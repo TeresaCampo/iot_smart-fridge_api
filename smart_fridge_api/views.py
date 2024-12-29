@@ -1,8 +1,6 @@
 from datetime import date, timedelta
-from django.http import HttpResponse
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework import viewsets
 from .models import Fridge, Product,Parameter
 from .serializers import FridgeSerializer, ProductSerializer, ParameterSerializer, CustomUserSerializer, CustomUserSignUpSerializer, LoginSerializer
 from django.shortcuts import get_object_or_404
@@ -12,26 +10,26 @@ from rest_framework import status
 from .models import Fridge, Product
 from .serializers import FridgeSerializer, ProductSerializer
 from drf_yasg.utils import swagger_auto_schema
-from django.contrib.auth.models import User
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 
-#for admin
-class FridgeList(APIView):
+class FridgeManager(APIView):
+    permission_classes = [IsAdminUser]
     @swagger_auto_schema(
-        operation_description="Retrieve all the fridges from the database",
-        responses={200: 'Ok'}
+        operation_description="For admin(superuser only)\nRetrieve all the fridges from the database.",
+        responses={200: 'Ok', 401: 'Not authenticated as superuser'},
     )
     def get(self, request):
         fridges = Fridge.objects.all()
         serializer = FridgeSerializer(fridges, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
     @swagger_auto_schema(
-        operation_description="Create a new fridge",
+        operation_description="For admin(superuser only)\nCreate a new fridge.",
         request_body=FridgeSerializer,
-        responses={201: 'Created', 400: 'Bad Request'}
+        responses={201: 'New fridge created', 400: 'Bad request body', 401: 'Not authenticated as superuser'}
     )
     def post(self, request):
             serializer=FridgeSerializer(data=request.data)
@@ -44,8 +42,8 @@ class FridgeList(APIView):
 
 class FridgeDetail(APIView):
     @swagger_auto_schema(
-        operation_description="Retrive info about a fridge",
-        responses={200: 'Ok', 404: "Fridge doesn't exist"}
+        operation_description="Retrive info about a fridge.",
+        responses={200: 'Ok', 404: "Fridge doesn't exist", 401: 'Not authenticated as user'}
     )
     def get(self, request, pk_fridge):
         fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
@@ -54,9 +52,9 @@ class FridgeDetail(APIView):
 
 class FridgeProductList(APIView):
     @swagger_auto_schema(
-        operation_description="Insert a new product in a fridge.If fridge_id is different from the one in the url, the url one is considered the valid one",
+        operation_description="Insert a new product in the fridge. The valid fridge_id is the one in the url.",
         request_body=ProductSerializer,
-        responses={201: 'Created', 404:"The fridge doesn't exist", 400: 'Bad Request'}
+        responses={201: 'Created', 404:"The fridge doesn't exist", 400: 'Bad request body', 401: 'Not authenticated as user'}
     )
     def post(self,request,pk_fridge):
         fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
@@ -70,9 +68,10 @@ class FridgeProductList(APIView):
             return Response(status=status.HTTP_201_CREATED)
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
+    
     @swagger_auto_schema(
-        operation_description="Retrieve all the products from a fridge",
-        responses={200: 'Ok', 404:"The fridge doesn't exist"}
+        operation_description="Retrieve all the products from the fridge.",
+        responses={200: 'Ok', 404:"The fridge doesn't exist", 401: 'Not authenticated as user'}
     )
     def get(self,request,pk_fridge):
         fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
@@ -83,8 +82,8 @@ class FridgeProductList(APIView):
 
 class FridgeProductDetail(APIView):
     @swagger_auto_schema(
-        operation_description="Delete a product from a fridge. If fridge_id is different from the one in the url, the url one is considered the valid one.",
-        responses={404:"The fridge or the product don't exist"}
+        operation_description="Delete a product from the fridge. The valid fridge_id is the one in the url.",
+        responses={200:"Product succesfully deleted from the fridge",404:"The fridge or the product don't exist", 401: 'Not authenticated as user'}
     )
     def delete(self,request,pk_fridge,barcode,expire_date):
         #check if fridge exists
@@ -98,10 +97,11 @@ class FridgeProductDetail(APIView):
         #delete the object
         product_to_be_deleted.delete()
         return Response({'status': 'success', 'message': 'Product deleted successfully.'}, status=status.HTTP_200_OK)
+    
     @swagger_auto_schema(
-        operation_description="Update a product of a fridge.If fridge_id is different from the one in the url, the url one is considered the valid one",
+        operation_description="Update a product of a fridge. The valid fridge_id is the one in the url.",
         request_body=ProductSerializer,
-        responses={201: 'Created', 404:"The fridge or the product don't exist", 400: 'Bad Request'}
+        responses={201: 'Product succesfully updated', 404:"The fridge or the product don't exist", 400: 'Bad request body',401: 'Not authenticated as user'}
     )
     def put(self,request,pk_fridge,barcode,expire_date):
         #check if fridge exists
@@ -127,8 +127,8 @@ class FridgeProductDetail(APIView):
 
 class FridgeExpiringProduct(APIView):
     @swagger_auto_schema(
-        operation_description="Retrive all the expiring products in a fridge",
-        responses={200: 'Ok', 404: "Fridge does't exist"}
+        operation_description="Retrive all the expiring products from a fridge.",
+        responses={200: 'Ok', 404: "Fridge does't exist",401: 'Not authenticated as user'}
     )
     def get(self, request,pk_fridge):
         existing_fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
@@ -141,16 +141,17 @@ class FridgeExpiringProduct(APIView):
 class FridgeParameter(APIView):
     @swagger_auto_schema(
         operation_description="Retrive the last (most recent) 20 sampled parameters",
-        responses={200: 'Ok', 404: "Fridge does't exist"}
+        responses={200: 'Ok', 404: "Fridge does't exist", 401: 'Not authenticated as user'}
     )
     def get(self, request, pk_fridge):
         existing_fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
         parameters=Parameter.objects.filter(fridge=existing_fridge).order_by('sampling_date')[:20]
         return Response(ParameterSerializer(parameters, many=True).data, status=status.HTTP_200_OK)
+    
     @swagger_auto_schema(
-        operation_description="Post a new set of parameters for a fridge.If fridge_id is different from the one in the url, the url one is considered the valid one",
+        operation_description="Insert a new set of parameters of the fridge. The valid fridge_id is the one in the url.",
         request_body=ParameterSerializer,
-        responses={201: 'Created', 400: 'Bad Request',404:"Fridge does't exist"}
+        responses={201: 'Parameters succesfully saved.', 400: 'Bad request body',404:"Fridge does't exist", 401: 'Not authenticated as user'}
     )
     def post(self,request, pk_fridge):
         existing_fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
@@ -164,8 +165,9 @@ class FridgeParameter(APIView):
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
+''' AUTHENTICATION '''
 @swagger_auto_schema(
-    operation_description="Login function",
+    operation_description="Login.",
     method='post',
     request_body=LoginSerializer,
     responses={200: 'Authenticated', 401: "Login error"}
@@ -190,12 +192,11 @@ def login(request):
         status=status.HTTP_401_UNAUTHORIZED
     )
 
-
 @swagger_auto_schema(
-    operation_description="New user signup",
+    operation_description="New user signup.",
     method='post',
     request_body=CustomUserSignUpSerializer,
-    responses={201: 'Created', 400: 'Bad Request', 500: 'Problems with token'}
+    responses={201: 'New user succesfully created', 400: 'Bad request body', 500: 'Problems with token'}
 )
 @api_view(['POST'])
 @permission_classes([AllowAny])
