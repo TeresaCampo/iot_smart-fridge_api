@@ -5,19 +5,19 @@ Content-Type: : application/json
 POST  http://127.0.0.1:8000/api/signup
 Content-Type: application/json
 
-{"first_name":"terry","last_name":"campo", "password": "Ciao","email": "test@gmail.commmaan", "fridge_id":0 }
+{"first_name":"Milva","last_name":"Buccella", "password": "cattivona","email": "milvietta@gmail.commmaan", "fridge_id":11 }
 
 ###
 POST  http://127.0.0.1:8000/api/login
 Content-Type: application/json
 
-{"password": "Ciao","email": "test@gmail.commmaan"}
+{"password": "cattivona","email": "milvietta@gmail.commmaan"}
 
 ###
 POST  http://127.0.0.1:8000/api/login
 Content-Type: application/json
 
-{"username":"test", "password": "Ciao","email": "test@gmail.com" }
+{"password": "cattivona","email": "milvietta@gmail.com" }
 
 ###
 POST  http://127.0.0.1:8000/api/signup

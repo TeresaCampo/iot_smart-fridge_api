@@ -57,6 +57,8 @@ class LoginViewTestCase(APITestCase):
         user = CustomUser.objects.get(email=self.data['email'])
         expected_token = Token.objects.get(user=user).key
         self.assertEqual(response.data['token'], expected_token)
+        self.assertEqual(response.data['user_fridge_id'], self.fridge1.fridge_id)
+
 
 
 

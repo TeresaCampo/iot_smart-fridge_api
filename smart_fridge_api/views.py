@@ -170,7 +170,7 @@ class FridgeParameter(APIView):
     operation_description="Login.",
     method='post',
     request_body=LoginSerializer,
-    responses={200: 'Authenticated', 401: "Login error"}
+    responses={200: 'Authenticated (returns token and user_fridge_id)', 401: "Login error"}
 )
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -183,7 +183,7 @@ def login(request):
         if user is not None:
             token, created = Token.objects.get_or_create(user=user)
             return Response(
-                {"token": token.key},
+                {"token": token.key, "user_fridge_id": user.fridge.fridge_id},
                 status=status.HTTP_200_OK
             )
     
