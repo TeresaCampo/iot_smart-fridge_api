@@ -8,7 +8,7 @@ import random
 from django.utils import timezone
 from .utils import *
 
-
+#----------------------CREATE AND GET FRIDGES----------------------------------------
 class FridgeListTestCase(APITestCase):
     def setUp(self):
         self.url = reverse('fridge_list') 
@@ -17,8 +17,8 @@ class FridgeListTestCase(APITestCase):
 
     def test_get_fridges(self):
         #create this obgjects in the test database
-        self.fridge1 = Fridge.objects.create(fridge_id=1,address="Viale Pio la Torre 26", city="Modena", country="ITA")
-        self.fridge2 = Fridge.objects.create(fridge_id=2,address="Via Teresina Bruchi 50", city="Modena", country="ITA")
+        self.fridge1 = Fridge.objects.create(fridge_id=1,longitude=9.186516,latitude=45.465454)
+        self.fridge2 = Fridge.objects.create(fridge_id=2,longitude=9.186516,latitude=45.465454)
 
         response = self.client.get(self.url)
         fridges = Fridge.objects.all()
@@ -31,22 +31,23 @@ class FridgeListTestCase(APITestCase):
     def test_post_fridges_valid_data(self):
         data={
             'fridge_id':5,
-            'address':'Test',
-            'city':'Testilandia',
-            'country':'ITA'
+            'longitude': 9.18651,
+            'latitude':45.465454
         }
         response = self.client.post(self.url, data)
         fridge = Fridge.objects.get(fridge_id=data['fridge_id'])
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(FridgeSerializer(fridge).data,data)
+        
+        data_to_check=FridgeSerializer(fridge).data
+        data_to_check.pop('last_charity_update')
+        self.assertEqual(data_to_check,data)
 
     def test_post_fridges_invalid_data1(self):
         data={
             'fridge_i':5,
-            'address':'Test',
-            'city':'Testilandia',
-            'country':'ITA'
+            'longitude': 9.18651,
+            'latitude':45.465454
         }
         response = self.client.post(self.url, data)
        
@@ -54,21 +55,21 @@ class FridgeListTestCase(APITestCase):
         self.assertFalse(Fridge.objects.filter(fridge_id=data['fridge_i']).exists())
 
     def test_post_fridges_already_existing(self):
-        self.fridge1 = Fridge.objects.create(fridge_id=1,address="Viale Pio la Torre 26", city="Modena", country="ITA")
+        self.fridge1 = Fridge.objects.create(fridge_id=1,longitude=9.186516,latitude=45.465454)
         data={
             'fridge_id':1,
-            'address':'Test',
-            'city':'Testilandia',
-            'country': 'ITA'
+            'longitude': 9.18651,
+            'latitude':45.465454
         }
         response = self.client.post(self.url, data)
         serializer=FridgeSerializer(data=data)
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+#----------------------GET INFO ABOUT A FRIDGE----------------------------------------
 class FridgeDetailTestCase(APITestCase):
     def setUp(self):
-        self.fridge1 = Fridge.objects.create(fridge_id=1,address="Viale Pio la Torre 26", city="Modena", country="ITA")
+        self.fridge1 = Fridge.objects.create(fridge_id=1,longitude=9.186516,latitude=45.465454)
         self.serializer=FridgeSerializer(self.fridge1)
         #user authentication
         self.client,self.user_fridge=create_normal_user(self.client)
@@ -86,121 +87,15 @@ class FridgeDetailTestCase(APITestCase):
         response=self.client.get(url)
         self.assertEqual(response.status_code,status.HTTP_404_NOT_FOUND)
 
-class FridgeProductListTestCase(APITestCase):
-    def setUp(self):
-        self.fridge1 = Fridge.objects.create(fridge_id=1,address="Viale Pio la Torre 26", city="Modena", country="ITA")
-        self.fridge2 = Fridge.objects.create(fridge_id=2,address="Via Teresina Bruchi 50", city="Modena", country="ITA")
-        #user authentication
-        self.client,self.user_fridge=create_normal_user(self.client)
-
-    def test_post_new_valid_product(self):
-        url = reverse('fridge_product_list', kwargs={'pk_fridge':self.fridge1.fridge_id})
-        data={'fridge' : self.fridge1.fridge_id,
-              'barcode':"1234567890123", 
-              'expire_date':"2024-12-31",
-              'name':"Latte"}
-        response=self.client.post(url, data, format='json')
-        product=Product.objects.get(barcode="1234567890123")
-
-        self.assertEqual(response.status_code,status.HTTP_201_CREATED)
-        self.assertEqual(data,ProductSerializer(product).data)        
-
-    def test_post_new_product_non_existing_fridge(self):
-        url=reverse('fridge_product_list',kwargs={'pk_fridge':3})
-        data={'fridge' : 3,
-              'barcode':"1234567890123", 
-              'expire_date':"2024-12-31",
-              'name':"Latte"}
-        
-        response=self.client.post(url,data)
-
-        self.assertEqual(response.status_code,status.HTTP_404_NOT_FOUND)
-        self.assertFalse(Product.objects.filter(barcode='1234567890123').exists())
-
-    def test_post_new_invalid_product(self):
-        url = reverse('fridge_product_list', kwargs={'pk_fridge':self.fridge1.fridge_id})
-        data={'fridge' : self.fridge1.fridge_id,
-              'barcde':"1234567890123", 
-              'expire_date':"2024-12-31",
-              'name':"Latte"}
-        response=self.client.post(url, data)
-
-        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
-        self.assertFalse(Product.objects.filter(barcode='1234567890123').exists())
-    
-    def test_post_new_incomplete_product(self):
-        url = reverse('fridge_product_list', kwargs={'pk_fridge':self.fridge1.fridge_id})
-        data={'fridge' : self.fridge1.fridge_id,
-              'barcode':"1234567890123", 
-              'name':"Latte"}
-        response=self.client.post(url, data, format='json')
-
-        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
-        self.assertFalse(Product.objects.filter(barcode='1234567890123').exists()) 
-
-    def test_post_new_product_associated_to_different_fridge(self):
-        url = reverse('fridge_product_list', kwargs={'pk_fridge':self.fridge1.fridge_id})
-        data={'fridge' : 2,
-              'barcode':"1234567890123", 
-              'expire_date':"2024-12-31",
-              'name':"Latte"}
-        response=self.client.post(url, data, format='json')
-
-        self.assertEqual(response.status_code,status.HTTP_201_CREATED)
-        self.assertEqual(Product.objects.get(barcode='1234567890123').fridge, self.fridge1)
-    
-    def test_get_all_products(self):
-        self.product1 = Product.objects.create(fridge=self.fridge1,barcode="aaaa000193", expire_date="2024-12-31", name="latte")
-        self.product2 = Product.objects.create(fridge=self.fridge1,barcode="aaaa1111193", expire_date="2022-12-31", name="uova")
-        self.product3 = Product.objects.create(fridge=self.fridge2,barcode="aaaa1111193", expire_date="2022-12-31", name="uova again")
-
-        url = reverse('fridge_product_list', kwargs={'pk_fridge':self.fridge1.fridge_id})
-        response=self.client.get(url)
-        expected_products=Product.objects.filter(fridge=self.fridge1)
-        expected_products=ProductSerializer(expected_products,many=True).data
-        self.assertEqual(len(response.data),len(expected_products))
-        self.assertEqual(response.data, expected_products)
-
-class FridgeExpiringProductTestCase(APITestCase):
-    def setUp(self):
-        tomorrow = date.today() + timedelta(days=1)
-        self.fridge1 = Fridge.objects.create(fridge_id=1,address="Viale Pio la Torre 26", city="Modena", country="ITA")
-        self.product1_1= Product.objects.create(fridge=self.fridge1,barcode="1234567890123", expire_date="2024-12-31",name="Latte")
-        self.product1_2= Product.objects.create(fridge=self.fridge1,barcode="1234567890124", expire_date=tomorrow,name="Latte")
-        
-        self.fridge2 = Fridge.objects.create(fridge_id=2,address="Via Teresina Bruchi 50", city="Modena", country="ITA")
-        self.product2_1= Product.objects.create(fridge=self.fridge1,barcode="1234567890123", expire_date="2024-12-31",name="Latte")
-        self.product2_2= Product.objects.create(fridge=self.fridge1,barcode="1234567890124", expire_date="2024-12-31",name="Latte")
-        #user authentication
-        self.client,self.user_fridge=create_normal_user(self.client)
-
-    def test_get_one_expiring_product(self):
-        url = reverse('fridge_expiring_product', kwargs={'pk_fridge': self.fridge1.fridge_id})
-        response=self.client.get(url)
-        
-        self.assertEqual(response.status_code,status.HTTP_200_OK)   
-        expected_products = ProductSerializer([self.product1_2], many=True).data
-        self.assertEqual(response.data, expected_products)
-    def test_no_expiring_products(self):
-        url = reverse('fridge_expiring_product', kwargs={'pk_fridge': self.fridge2.fridge_id})
-        response=self.client.get(url)
-
-        self.assertEqual(response.status_code,status.HTTP_200_OK)
-        self.assertEqual(len(response.data),0)
-    def test_not_existing_fridge(self):
-        url = reverse('fridge_expiring_product', kwargs={'pk_fridge': 3})
-        response=self.client.get(url)
-
-        self.assertTrue(response.status_code,status.HTTP_404_NOT_FOUND)
-
+#----------------------CREATE, DELETE OR UPDATE A PRODUCT, GET PRODUCTS----------------------------------------
 class FridgeProductDetailTestCase(APITestCase):
     def setUp(self):
         #fridge with 2 products with same barcode and expire date
-        self.fridge1 = Fridge.objects.create(fridge_id=1,address="Viale Pio la Torre 26", city="Modena", country="ITA")
+        self.fridge1 = Fridge.objects.create(fridge_id=1,longitude=9.186516,latitude=45.465454)
         self.product1_1= Product.objects.create(fridge=self.fridge1,barcode="1234567890123", expire_date="2024-12-31",name="Latte")
         self.product1_2= Product.objects.create(fridge=self.fridge1,barcode="1234567890123", expire_date="2024-12-31",name="Cereali")
         #fridge with different products
-        self.fridge2 = Fridge.objects.create(fridge_id=2,address="Via Teresina Bruchi 50", city="Modena", country="ITA")
+        self.fridge2 = Fridge.objects.create(fridge_id=2,longitude=9.186516,latitude=45.465454)
         self.product2_1= Product.objects.create(fridge=self.fridge2,barcode="1234567890123", expire_date="2024-12-31",name="Latte")
         self.product1_2= Product.objects.create(fridge=self.fridge2,barcode="1234567890124", expire_date="2024-12-30",name="Cereali")
         #user authentication
@@ -298,10 +193,131 @@ class FridgeProductDetailTestCase(APITestCase):
         response=self.client.put(url, updated_product)
 
         self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
- 
+
+class FridgeProductListTestCase(APITestCase):
+    def setUp(self):
+        self.fridge1 = Fridge.objects.create(fridge_id=1,longitude=9.186516,latitude=45.465454)
+        self.fridge2 = Fridge.objects.create(fridge_id=2,longitude=9.186516,latitude=45.465454)
+        #user authentication
+        self.client,self.user_fridge=create_normal_user(self.client)
+
+    def test_post_new_valid_product(self):
+        url = reverse('fridge_product_list', kwargs={'pk_fridge':self.fridge1.fridge_id})
+        data={'fridge' : self.fridge1.fridge_id,
+              'barcode':"1234567890123", 
+              'expire_date':"2024-12-31",
+              'name':"Latte"}
+        response=self.client.post(url, data, format='json')
+        product=Product.objects.get(barcode="1234567890123")
+
+        self.assertEqual(response.status_code,status.HTTP_201_CREATED)
+        self.assertEqual(data,ProductSerializer(product).data)        
+
+    def test_post_new_product_non_existing_fridge(self):
+        url=reverse('fridge_product_list',kwargs={'pk_fridge':3})
+        data={'fridge' : 3,
+              'barcode':"1234567890123", 
+              'expire_date':"2024-12-31",
+              'name':"Latte"}
+        
+        response=self.client.post(url,data)
+
+        self.assertEqual(response.status_code,status.HTTP_404_NOT_FOUND)
+        self.assertFalse(Product.objects.filter(barcode='1234567890123').exists())
+
+    def test_post_new_invalid_product(self):
+        url = reverse('fridge_product_list', kwargs={'pk_fridge':self.fridge1.fridge_id})
+        data={'fridge' : self.fridge1.fridge_id,
+              'barcde':"1234567890123", 
+              'expire_date':"2024-12-31",
+              'name':"Latte"}
+        response=self.client.post(url, data)
+
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(Product.objects.filter(barcode='1234567890123').exists())
+    
+    def test_post_new_incomplete_product(self):
+        url = reverse('fridge_product_list', kwargs={'pk_fridge':self.fridge1.fridge_id})
+        data={'fridge' : self.fridge1.fridge_id,
+              'barcode':"1234567890123", 
+              'name':"Latte"}
+        response=self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code,status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(Product.objects.filter(barcode='1234567890123').exists()) 
+
+    def test_post_new_product_associated_to_different_fridge(self):
+        url = reverse('fridge_product_list', kwargs={'pk_fridge':self.fridge1.fridge_id})
+        data={'fridge' : 2,
+              'barcode':"1234567890123", 
+              'expire_date':"2024-12-31",
+              'name':"Latte"}
+        response=self.client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code,status.HTTP_201_CREATED)
+        self.assertEqual(Product.objects.get(barcode='1234567890123').fridge, self.fridge1)
+    
+    def test_get_all_products(self):
+        self.product1 = Product.objects.create(fridge=self.fridge1,barcode="aaaa000193", expire_date="2024-12-31", name="latte")
+        self.product2 = Product.objects.create(fridge=self.fridge1,barcode="aaaa1111193", expire_date="2022-12-31", name="uova")
+        self.product3 = Product.objects.create(fridge=self.fridge2,barcode="aaaa1111193", expire_date="2022-12-31", name="uova again")
+
+        url = reverse('fridge_product_list', kwargs={'pk_fridge':self.fridge1.fridge_id})
+        response=self.client.get(url)
+        expected_products=Product.objects.filter(fridge=self.fridge1)
+        expected_products=ProductSerializer(expected_products,many=True).data
+        self.assertEqual(len(response.data),len(expected_products))
+        self.assertEqual(response.data, expected_products)
+
+#----------------------GET EXPIRING PRODUCTS AND FLAG TOCHARITY----------------------------------------
+class FridgeExpiringProductTestCase(APITestCase):
+    def setUp(self):
+        tomorrow = date.today() + timedelta(days=1)
+        self.fridge1 = Fridge.objects.create(fridge_id=1,longitude=9.186516,latitude=45.465454,last_charity_update=date.today() - timedelta(days=1))
+        self.product1_1= Product.objects.create(fridge=self.fridge1,barcode="1234567890123", expire_date="2024-12-31",name="Latte")
+        self.product1_2= Product.objects.create(fridge=self.fridge1,barcode="1234567890124", expire_date=tomorrow,name="Latte")
+        
+        self.fridge2 = Fridge.objects.create(fridge_id=2,longitude=9.186516,latitude=45.465454,last_charity_update=date.today() - timedelta(days=1))
+        self.product2_1= Product.objects.create(fridge=self.fridge2,barcode="1234567890123", expire_date="2024-12-31",name="Latte")
+        self.product2_2= Product.objects.create(fridge=self.fridge2,barcode="1234567890124", expire_date="2024-12-31",name="Latte")
+        
+        self.fridge3 = Fridge.objects.create(fridge_id=3,longitude=9.186516,latitude=45.465454)
+        self.product3_1= Product.objects.create(fridge=self.fridge3,barcode="1234567890123", expire_date="2024-12-31",name="Latte")
+        self.product3_2= Product.objects.create(fridge=self.fridge3,barcode="1234567890124", expire_date=tomorrow,name="Latte")
+        
+        #user authentication
+        self.client,self.user_fridge=create_normal_user(self.client)
+
+    def test_get_one_expiring_product(self):
+        url = reverse('fridge_expiring_product', kwargs={'pk_fridge': self.fridge1.fridge_id})
+        response=self.client.get(url)
+        
+        self.assertEqual(response.status_code,status.HTTP_200_OK)   
+        expected_products = ProductSerializer([self.product1_2], many=True).data
+        self.assertEqual(response.data, expected_products)
+    def test_no_expiring_products(self):
+        url = reverse('fridge_expiring_product', kwargs={'pk_fridge': self.fridge2.fridge_id})
+        response=self.client.get(url)
+
+        self.assertEqual(response.status_code,status.HTTP_200_OK)
+        self.assertEqual(len(response.data),0)
+    def test_not_existing_fridge(self):
+        url = reverse('fridge_expiring_product', kwargs={'pk_fridge': 4})
+        response=self.client.get(url)
+
+        self.assertTrue(response.status_code,status.HTTP_404_NOT_FOUND)
+    def test_already_checked_tofay(self):
+        url = reverse('fridge_expiring_product', kwargs={'pk_fridge': self.fridge3.fridge_id})
+        response=self.client.get(url)
+
+        self.assertTrue(response.status_code,status.HTTP_304_NOT_MODIFIED)
+
+class FridgeExpiringProductsDonate(APITestCase):
+    pass
+#----------------------GET TEMP/HUM PARAMETERS----------------------------------------
 class FridgeParameterTestCase(APITestCase):
     def setUp(self):
-        self.fridge = Fridge.objects.create(fridge_id=1,address="Viale Pio la Torre 26", city="Modena", country="ITA")
+        self.fridge = Fridge.objects.create(fridge_id=1,longitude=9.186516,latitude=45.465454)
         base_date = timezone.now()  
 
         for i in range(8):

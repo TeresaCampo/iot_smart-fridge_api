@@ -4,6 +4,7 @@ from rest_framework import serializers
 from rest_framework import serializers
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
+from django.utils.timezone import now
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
@@ -62,9 +63,11 @@ class CustomUserSignUpSerializer(serializers.Serializer):
         return user
 
 class FridgeSerializer(serializers.ModelSerializer):
+    last_charity_update = serializers.DateField(required=False) 
+
     class Meta:
         model = Fridge
-        fields = ['fridge_id', 'address', 'city', 'country']
+        fields = ['fridge_id', 'longitude', 'latitude', 'last_charity_update']
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:

@@ -7,7 +7,7 @@ from rest_framework import status
 class SignupViewTestCase(APITestCase):
     def setUp(self):
         self.url = reverse('user_signup')  
-        self.fridge1 = Fridge.objects.create(fridge_id=11,address="Viale Pio la Torre 26", city="Modena", country="ITA")
+        self.fridge1 = Fridge.objects.create(fridge_id=11,longitude=9.186516,latitude=45.465454)
 
     def test_singup_success(self):
         data={'email':'test@gmail.com', 'first_name': 'TestName', 'last_name':'TestSurname','fridge_id':11, 'password':'debole'}
@@ -40,7 +40,7 @@ class SignupViewTestCase(APITestCase):
 class LoginViewTestCase(APITestCase):
     def setUp(self):
         #create the fridge
-        self.fridge1 = Fridge.objects.create(fridge_id=11,address="Viale Pio la Torre 26", city="Modena", country="ITA")
+        self.fridge1 = Fridge.objects.create(fridge_id=11,longitude=9.186516,latitude=45.465454)
         #create the user
         self.data={'email':'test@gmail.com', 'first_name': 'TestName', 'last_name':'TestSurname','fridge_id':11, 'password':'debole'}
         url_singup = reverse('user_signup')  
@@ -58,9 +58,3 @@ class LoginViewTestCase(APITestCase):
         expected_token = Token.objects.get(user=user).key
         self.assertEqual(response.data['token'], expected_token)
         self.assertEqual(response.data['user_fridge_id'], self.fridge1.fridge_id)
-
-
-
-
-        
-    

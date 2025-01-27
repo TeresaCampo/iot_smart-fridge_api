@@ -5,7 +5,8 @@ from rest_framework.authtoken.models import Token
 
 def create_normal_user(client: APIClient):
     #create the fridge
-    user_fridge = Fridge.objects.create(fridge_id=11,address="Viale Pio la Torre 26", city="Modena", country="ITA")
+    user_fridge = Fridge.objects.create(fridge_id=11,longitude=9.186516,latitude=45.465454)
+
     #create the user
     user_data={'email':'test@gmail.com', 'first_name': 'TestName', 'last_name':'TestSurname','fridge_id':11, 'password':'debole'}
     url_singup = reverse('user_signup')  

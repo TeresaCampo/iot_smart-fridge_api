@@ -15,6 +15,7 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
 
+#----------------------CREATE AND GET FRIDGES----------------------------------------
 class FridgeManager(APIView):
     permission_classes = [IsAdminUser]
     @swagger_auto_schema(
@@ -40,6 +41,7 @@ class FridgeManager(APIView):
             else:
                 return Response(status= status.HTTP_400_BAD_REQUEST)
 
+#----------------------GET INFO ABOUT A FRIDGE----------------------------------------
 class FridgeDetail(APIView):
     @swagger_auto_schema(
         operation_description="Retrive info about a fridge.",
@@ -50,6 +52,7 @@ class FridgeDetail(APIView):
         serializer = FridgeSerializer(fridge)
         return Response(serializer.data,status=status.HTTP_200_OK)
 
+#----------------------CREATE, DELETE OR UPDATE A PRODUCT, GET PRODUCTS----------------------------------------
 class FridgeProductList(APIView):
     @swagger_auto_schema(
         operation_description="Insert a new product in the fridge. The valid fridge_id is the one in the url.",
@@ -99,7 +102,7 @@ class FridgeProductDetail(APIView):
         return Response({'status': 'success', 'message': 'Product deleted successfully.'}, status=status.HTTP_200_OK)
     
     @swagger_auto_schema(
-        operation_description="Update a product of a fridge. The valid fridge_id is the one in the url.",
+        operation_description="Update a product of a fridge.\nThe url contains the barcode and the expire_date of the product to be updated.\nThe body contains the new info about the product.\nThe valid fridge_id is the one in the url.",
         request_body=ProductSerializer,
         responses={201: 'Product succesfully updated', 404:"The fridge or the product don't exist", 400: 'Bad request body',401: 'Not authenticated as user'}
     )
@@ -125,19 +128,47 @@ class FridgeProductDetail(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+#----------------------GET EXPIRING PRODUCTS AND FLAG TOCHARITY----------------------------------------
 class FridgeExpiringProduct(APIView):
     @swagger_auto_schema(
-        operation_description="Retrive all the expiring products from a fridge.",
-        responses={200: 'Ok', 404: "Fridge does't exist",401: 'Not authenticated as user'}
+        operation_description="Retrive all the expiring products from a fridge.\nIf the request has already been sent the current day, the response is 304 not modified.",
+        responses={304:'Already checked today',200: 'Ok', 404: "Fridge does't exist",401: 'Not authenticated as user'}
     )
     def get(self, request,pk_fridge):
         existing_fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
-        tomorrow = date.today() + timedelta(days=1)
-        
-        product = Product.objects.filter(fridge=existing_fridge,expire_date=tomorrow)
-        serializer = ProductSerializer(product, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        today=date.today()
 
+        if(existing_fridge.last_charity_update<today):  #check expiring products
+            tomorrow = date.today() + timedelta(days=1)
+            existing_fridge.last_charity_update=date.today()
+            product = Product.objects.filter(fridge=existing_fridge,expire_date=tomorrow)
+            serializer = ProductSerializer(product, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({'message': 'Already checked today.'}, status=status.HTTP_304_NOT_MODIFIED)
+
+@swagger_auto_schema(
+    operation_description="Set the product as product to be donated.",
+    method='post',
+    request_body=CustomUserSignUpSerializer,
+    responses={200: 'Succesfully updated',404: 'Bad request body', 500: 'Problems with token'}
+)
+@api_view(['POST'])
+def donate_product(request,pk_fridge,barcode):
+        #check if fridge exists
+        fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
+        tomorrow = date.today() + timedelta(days=1)
+
+        #check if product exists
+        product_to_be_donated = Product.objects.filter(fridge=fridge, barcode=barcode, expire_date=tomorrow).first()
+        if product_to_be_donated is None:
+            return Response({'message': 'Product is not present in the database.'}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            product_to_be_donated.toCharity = True  
+            product_to_be_donated.save()
+            return Response( status=status.HTTP_200_OK)
+
+#----------------------GET TEMP/HUM PARAMETERS----------------------------------------
 class FridgeParameter(APIView):
     @swagger_auto_schema(
         operation_description="Retrive the last (most recent) 20 sampled parameters",
@@ -165,7 +196,7 @@ class FridgeParameter(APIView):
         else:
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
-''' AUTHENTICATION '''
+#----------------------LOGIN AND SINGUP----------------------------------------
 @swagger_auto_schema(
     operation_description="Login.",
     method='post',
@@ -175,7 +206,6 @@ class FridgeParameter(APIView):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login(request):
-
     login_data_serialized=LoginSerializer(data=request.data)
     if login_data_serialized.is_valid():
         user=login_data_serialized.validate(request.data)
@@ -193,7 +223,7 @@ def login(request):
     )
 
 @swagger_auto_schema(
-    operation_description="New user signup.",
+    operation_description="New user signup.\nThe fridge should exist in the database(it is created when the fridge is sold).",
     method='post',
     request_body=CustomUserSignUpSerializer,
     responses={201: 'New user succesfully created', 400: 'Bad request body', 500: 'Problems with token'}
@@ -217,3 +247,5 @@ def signup(request):
         return Response(
             {"errors": user_serialized.errors},status=status.HTTP_400_BAD_REQUEST
         )
+
+

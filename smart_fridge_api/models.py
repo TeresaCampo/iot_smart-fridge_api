@@ -1,27 +1,19 @@
 from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.utils import timezone
+def get_today_date():
+    return timezone.now().date()
 
-'''
-smart_fridge(fridge_id, address, city, country)
-PK(fridge_id)
-
-product(fridge_id, barcode, expire_date, name)
-PK(id autogenerato)
-FK fridge_id REFERENCES smart_fridge
-
-parameters(fridge_id, humidity, temperature, sampling_date)
-PK(id autogenerato) <-avrei voluto(fridge_id, sampling_data), ma Django non offre composite PK
-FK fridge_id REFERENCES smart_fridge
-'''
 class Fridge(models.Model):
     fridge_id = models.IntegerField(primary_key=True)
-    address = models.CharField(max_length=255)
-    city = models.CharField(max_length=100)
-    country = models.CharField(max_length=100)
+    latitude = models.FloatField(null=True)  
+    longitude = models.FloatField(null=True)  
+    last_charity_update = models.DateField(default=get_today_date)
+    
 
     def __str__(self):
-        return f"Fridge {self.fridge_id} in {self.city}, {self.country}"
+        return f"Fridge {self.fridge_id}"
 
 class Parameter(models.Model):
     fridge = models.ForeignKey(Fridge, on_delete=models.CASCADE)
@@ -37,6 +29,7 @@ class Product(models.Model):
     barcode = models.CharField(max_length=100)
     expire_date = models.DateField()
     name = models.CharField(max_length=100)
+    toCharity = models.BooleanField(default=False)
     
     def __str__(self):
             return f"{self.name} (Barcode: {self.barcode}) - Expires on {self.expire_date}"
