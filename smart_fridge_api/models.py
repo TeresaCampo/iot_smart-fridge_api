@@ -21,6 +21,12 @@ class Parameter(models.Model):
     temperature=models.FloatField(null=True)
     sampling_date = models.DateTimeField()
 
+    def save(self, *args, **kwargs):
+        # Tronca secondi e microsecondi se presente
+        if self.sampling_date:
+            self.sampling_date = self.sampling_date.replace(second=0, microsecond=0)
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"Parameters of fridge {self.fridge.fridge_id} in {self.sampling_date.strftime('%Y-%m-%d %H:%M')} (Humidity: {self.humidity}) - (Temperature: {self.temperature})"
 
