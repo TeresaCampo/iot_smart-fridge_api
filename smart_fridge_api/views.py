@@ -136,11 +136,11 @@ class FridgeExpiringProduct(APIView):
     )
     def get(self, request,pk_fridge):
         existing_fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
-        today=date.today()
 
-        if(existing_fridge.last_charity_update<today):  #check expiring products
+        if(existing_fridge.toCharity_updated_today==False):  #check expiring products
+            existing_fridge.last_charity_update=True
+
             tomorrow = date.today() + timedelta(days=1)
-            existing_fridge.last_charity_update=date.today()
             product = Product.objects.filter(fridge=existing_fridge,expire_date=tomorrow)
             serializer = ProductSerializer(product, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)

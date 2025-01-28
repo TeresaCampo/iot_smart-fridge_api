@@ -40,7 +40,7 @@ class FridgeListTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         
         data_to_check=FridgeSerializer(fridge).data
-        data_to_check.pop('last_charity_update')
+        data_to_check.pop('toCharity_updated_today')
         self.assertEqual(data_to_check,data)
 
     def test_post_fridges_invalid_data1(self):
@@ -273,15 +273,15 @@ class FridgeProductListTestCase(APITestCase):
 class FridgeExpiringProductTestCase(APITestCase):
     def setUp(self):
         tomorrow = date.today() + timedelta(days=1)
-        self.fridge1 = Fridge.objects.create(fridge_id=1,longitude=9.186516,latitude=45.465454,last_charity_update=date.today() - timedelta(days=1))
+        self.fridge1 = Fridge.objects.create(fridge_id=1,longitude=9.186516,latitude=45.465454,toCharity_updated_today=False)
         self.product1_1= Product.objects.create(fridge=self.fridge1,barcode="1234567890123", expire_date="2024-12-31",name="Latte")
         self.product1_2= Product.objects.create(fridge=self.fridge1,barcode="1234567890124", expire_date=tomorrow,name="Latte")
         
-        self.fridge2 = Fridge.objects.create(fridge_id=2,longitude=9.186516,latitude=45.465454,last_charity_update=date.today() - timedelta(days=1))
+        self.fridge2 = Fridge.objects.create(fridge_id=2,longitude=9.186516,latitude=45.465454,toCharity_updated_today=False)
         self.product2_1= Product.objects.create(fridge=self.fridge2,barcode="1234567890123", expire_date="2024-12-31",name="Latte")
         self.product2_2= Product.objects.create(fridge=self.fridge2,barcode="1234567890124", expire_date="2024-12-31",name="Latte")
         
-        self.fridge3 = Fridge.objects.create(fridge_id=3,longitude=9.186516,latitude=45.465454)
+        self.fridge3 = Fridge.objects.create(fridge_id=3,longitude=9.186516,latitude=45.465454,toCharity_updated_today=True)
         self.product3_1= Product.objects.create(fridge=self.fridge3,barcode="1234567890123", expire_date="2024-12-31",name="Latte")
         self.product3_2= Product.objects.create(fridge=self.fridge3,barcode="1234567890124", expire_date=tomorrow,name="Latte")
         

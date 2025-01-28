@@ -63,11 +63,11 @@ class CustomUserSignUpSerializer(serializers.Serializer):
         return user
 
 class FridgeSerializer(serializers.ModelSerializer):
-    last_charity_update = serializers.DateField(required=False) 
+    toCharity_updated_today = serializers.BooleanField(required=False) 
 
     class Meta:
         model = Fridge
-        fields = ['fridge_id', 'longitude', 'latitude', 'last_charity_update']
+        fields = ['fridge_id', 'longitude', 'latitude', 'toCharity_updated_today']
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:

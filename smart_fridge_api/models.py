@@ -2,6 +2,7 @@ from django.utils import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django.utils import timezone
+
 def get_today_date():
     return timezone.now().date()
 
@@ -9,9 +10,8 @@ class Fridge(models.Model):
     fridge_id = models.IntegerField(primary_key=True)
     latitude = models.FloatField(null=True)  
     longitude = models.FloatField(null=True)  
-    last_charity_update = models.DateField(default=get_today_date)
+    toCharity_updated_today = models.BooleanField(default=False)
     
-
     def __str__(self):
         return f"Fridge {self.fridge_id}"
 
