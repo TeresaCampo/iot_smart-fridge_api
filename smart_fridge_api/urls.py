@@ -51,7 +51,12 @@ urlpatterns = [
     #post /singup
     path('signup', views.signup, name='user_signup'),
     #post /login
-    path('login', views.login, name='user_login')
+    path('login', views.login, name='user_login'),
+
+    #/midDayUpdate
+    path('midDayUpdate', views.mid_day_update, name='mid_day_update'),
+    #/morningUpdate
+    path('morningUpdate', views.morning_update, name='morning_update'),
 ]
 
 

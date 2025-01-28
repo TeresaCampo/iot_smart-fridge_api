@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
+from .services import mid_day_routine,morning_routine
 
 #----------------------CREATE AND GET FRIDGES----------------------------------------
 class FridgeManager(APIView):
@@ -248,4 +249,25 @@ def signup(request):
             {"errors": user_serialized.errors},status=status.HTTP_400_BAD_REQUEST
         )
 
+@swagger_auto_schema(
+    operation_description="Execute mid day update.",
+    method='get',
+    responses={200: 'Succesfully executed', 400: 'Bad request body'}
+)
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def mid_day_update(request):
+    mid_day_routine()
+    return Response(status.HTTP_200_OK)
+
+@swagger_auto_schema(
+    operation_description="Execute morning update.",
+    method='get',
+    responses={200: 'Succesfully executed', 400: 'Bad request body'}
+)
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def morning_update(request):
+    morning_routine()
+    return Response(status.HTTP_200_OK)
 
