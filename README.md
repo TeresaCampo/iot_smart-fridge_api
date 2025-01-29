@@ -33,7 +33,14 @@ python3 manage.py test
 ### 2. eseguire il server
 
 ```bash
-python manage.py runserver 0.0.0.0:8080
+python3 manage.py runserver 0.0.0.0:8080
+```
+
+Se si vuole anche inizializzare il database con info di deafult
+
+```bash
+python3 manage.py populate_db
+python3 manage.py runserver 0.0.0.0:8080
 ```
 
 ### 3. controllare la documentazione alla pagina /api

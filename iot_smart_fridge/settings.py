@@ -130,7 +130,7 @@ SWAGGER_SETTINGS = {
             'type': 'apiKey',
             'in': 'header',
             'name': 'Authorization',
-            'description': 'Insert token with the following syntax -> Token \<token\>'
+            'description': 'Insert token with the following syntax -> Token <token>'
 
         }
     },

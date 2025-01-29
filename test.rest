@@ -5,7 +5,7 @@ Content-Type: : application/json
 POST  http://127.0.0.1:8000/api/signup
 Content-Type: application/json
 
-{"first_name":"Milva","last_name":"Buccella", "password": "cattivona","email": "milvietta@gmail.commmaan", "fridge_id":11 }
+{"first_name":"Andrea","last_name":"Rossi", "password": "ciao","email": "andrearossi@gmail.com", "fridge_id":2 }
 
 ###
 POST  http://127.0.0.1:8000/api/login
