@@ -80,3 +80,8 @@ class ParameterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Parameter
         fields = ['fridge','humidity','temperature','sampling_date'] 
+
+class ProductToCharitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Product
+        fields=['barcode']

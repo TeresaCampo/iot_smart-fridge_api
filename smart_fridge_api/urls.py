@@ -42,7 +42,7 @@ urlpatterns = [
     #get /fridges/<int:pk>/expiringProducts    -->retieve all the products in a fridge
     path('fridges/<int:pk_fridge>/expiringProducts', views.FridgeExpiringProduct.as_view(), name='fridge_expiring_product'),
     #post /fridges/<int:pk>/expiringProducts/<str:barcode>  -->inform backend if the product is going to be donated or not
-    path('fridges/<int:pk_fridge>/expiringProducts/<str:barcode>', views.donate_product, name='fridge_expiring_product_donate'),
+    #path('fridges/<int:pk_fridge>/expiringProducts', views.donate_product, name='fridge_expiring_product_donate'),
     
     #get /fridges/<int:pk>/parameters --> retrive last 20 sampled parameters
     #post /fridges/<int:pk>/parameters -->post a new set of parameters

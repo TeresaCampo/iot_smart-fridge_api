@@ -306,14 +306,31 @@ class FridgeExpiringProductTestCase(APITestCase):
         response=self.client.get(url)
 
         self.assertTrue(response.status_code,status.HTTP_404_NOT_FOUND)
-    def test_already_checked_tofay(self):
+    def test_already_checked_today(self):
         url = reverse('fridge_expiring_product', kwargs={'pk_fridge': self.fridge3.fridge_id})
         response=self.client.get(url)
 
         self.assertTrue(response.status_code,status.HTTP_304_NOT_MODIFIED)
 
 class FridgeExpiringProductsDonate(APITestCase):
-    pass
+    def setUp(self):
+        self.tomorrow = date.today() + timedelta(days=1)
+        self.fridge1 = Fridge.objects.create(fridge_id=1,longitude=9.186516,latitude=45.465454,toCharity_updated_today=False)
+        self.product1_1= Product.objects.create(fridge=self.fridge1,barcode="1234567890123", expire_date="2024-12-31",name="Latte")
+        self.product1_2= Product.objects.create(fridge=self.fridge1,barcode="1234567890124", expire_date=self.tomorrow,name="Latte", toCharity=False)
+        
+        #user authentication
+        self.client,self.user_fridge=create_normal_user(self.client)
+    
+    def test_flag_to_charity(self):
+        url = reverse('fridge_expiring_product', kwargs={'pk_fridge': 1})
+        response=self.client.post(url, data={'barcode':"1234567890124"})
+        print()
+
+        products1_2_updated=Product.objects.get(fridge=self.fridge1, barcode="1234567890124", expire_date=self.tomorrow)
+        self.assertEqual(products1_2_updated.toCharity, True)
+  
+
 #----------------------GET TEMP/HUM PARAMETERS----------------------------------------
 class FridgeParameterTestCase(APITestCase):
     def setUp(self):

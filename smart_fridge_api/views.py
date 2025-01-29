@@ -2,7 +2,7 @@ from datetime import date, timedelta
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
 from .models import Fridge, Product,Parameter
-from .serializers import FridgeSerializer, ProductSerializer, ParameterSerializer, CustomUserSerializer, CustomUserSignUpSerializer, LoginSerializer
+from .serializers import FridgeSerializer, ProductSerializer, ParameterSerializer, CustomUserSerializer, CustomUserSignUpSerializer, LoginSerializer, ProductToCharitySerializer
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -151,17 +151,22 @@ class FridgeExpiringProduct(APIView):
 @swagger_auto_schema(
     operation_description="Set the product as product to be donated.",
     method='post',
-    request_body=CustomUserSignUpSerializer,
+    request_body= ProductToCharitySerializer,
     responses={200: 'Succesfully updated',404: 'Bad request body', 500: 'Problems with token'}
 )
 @api_view(['POST'])
-def donate_product(request,pk_fridge,barcode):
+def donate_product(request,pk_fridge):
         #check if fridge exists
         fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
         tomorrow = date.today() + timedelta(days=1)
+        serializer = ProductToCharitySerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        expiring_products_barcode = serializer.validated_data["barcode"]
+        print(expiring_products_barcode)
 
         #check if product exists
-        product_to_be_donated = Product.objects.filter(fridge=fridge, barcode=barcode, expire_date=tomorrow).first()
+        product_to_be_donated = Product.objects.filter(fridge=fridge, barcode=expiring_products_barcode, expire_date=tomorrow).first()
         if product_to_be_donated is None:
             return Response({'message': 'Product is not present in the database.'}, status=status.HTTP_404_NOT_FOUND)
         else:
