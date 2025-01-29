@@ -17,7 +17,7 @@ conda create -n iot_server python=3.12.4
 ### 3. controllare che tutto funzioni correttamente eseguendo i tests
 
 ```bash
-python3 manage.py test smart_fridge_api.tests
+python3 manage.py test
 ```
 
 ## ESEGUIRE IL SERVER SU UN INDIRIZZO IP PUBBLICO

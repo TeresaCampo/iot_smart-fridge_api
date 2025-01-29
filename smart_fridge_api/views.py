@@ -14,7 +14,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import api_view
-from .services import mid_day_routine,morning_routine
+from .services.services import mid_day_routine,morning_routine
 
 #----------------------CREATE AND GET FRIDGES----------------------------------------
 class FridgeManager(APIView):

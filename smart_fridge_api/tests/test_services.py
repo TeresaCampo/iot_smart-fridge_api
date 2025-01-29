@@ -71,6 +71,8 @@ class MorningUpdateTestCase(APITestCase):
         self.product3_2= Product.objects.create(fridge=self.fridge3,barcode="1234567890124", expire_date=tomorrow,name="Latte")
 
     def test_find_fridges_which_donate(self):
-        self.client.get(self.url)
+        #Not executed every time otherwise too many messages on telegram
+        #self.client.get(self.url)
+        pass
 
 
