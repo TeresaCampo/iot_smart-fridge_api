@@ -1,5 +1,6 @@
 from datetime import date, timedelta
 from .models import Fridge, Product,Parameter
+from .ottimizzatore_path import start
 
 def mid_day_routine():
     #delete products expired the day before
@@ -19,8 +20,11 @@ def mid_day_routine():
 def morning_routine():
     #collect addresses of people who set True to toCharity_updated_today
     fridges_with_toCharity_products = Fridge.objects.filter(product__toCharity=True).distinct()
-    fridges_latitude_longitude = [(fridge.latitude, fridge.longitude) for fridge in fridges_with_toCharity_products]
-    print(fridges_latitude_longitude)
+    #fridges_latitude_longitude = ["".join(fridge.latitude,', ', fridge.longitude) for fridge in fridges_with_toCharity_products]
+    fridges_latitude_longitude= [f"{fridge.latitude}, {fridge.longitude}" for fridge in fridges_with_toCharity_products]
+
+    #print(fridges_latitude_longitude)
+    start(fridges_latitude_longitude)
     #not allow other users to give product to charity from now to mid day
     Fridge.objects.update(toCharity_updated_today=True)
 
