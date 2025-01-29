@@ -147,29 +147,27 @@ class FridgeExpiringProduct(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response({'message': 'Already checked today.'}, status=status.HTTP_304_NOT_MODIFIED)
-
-@swagger_auto_schema(
-    operation_description="Set the product as product to be donated.",
-    method='post',
-    request_body= ProductToCharitySerializer,
-    responses={200: 'Succesfully updated',404: 'Bad request body', 500: 'Problems with token'}
-)
-@api_view(['POST'])
-def donate_product(request,pk_fridge):
+    @swagger_auto_schema(
+        operation_description="Retrive all the expiring products from a fridge.\nIf the request has already been sent the current day, the response is 304 not modified.",
+        responses={304:'Already checked today',200: 'Ok', 404: "Fridge does't exist",401: 'Not authenticated as user'},
+        request_body=ProductToCharitySerializer,
+    )
+    def post(self,request,pk_fridge):
         #check if fridge exists
         fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
         tomorrow = date.today() + timedelta(days=1)
         serializer = ProductToCharitySerializer(data=request.data)
+        
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         expiring_products_barcode = serializer.validated_data["barcode"]
-        print(expiring_products_barcode)
 
         #check if product exists
         product_to_be_donated = Product.objects.filter(fridge=fridge, barcode=expiring_products_barcode, expire_date=tomorrow).first()
         if product_to_be_donated is None:
             return Response({'message': 'Product is not present in the database.'}, status=status.HTTP_404_NOT_FOUND)
         else:
+            #Product.objects.filter(fridge=fridge, barcode=expiring_products_barcode, expire_date=tomorrow).update(toCharity=True)
             product_to_be_donated.toCharity = True  
             product_to_be_donated.save()
             return Response( status=status.HTTP_200_OK)

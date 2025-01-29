@@ -325,10 +325,9 @@ class FridgeExpiringProductsDonate(APITestCase):
     def test_flag_to_charity(self):
         url = reverse('fridge_expiring_product', kwargs={'pk_fridge': 1})
         response=self.client.post(url, data={'barcode':"1234567890124"})
-        print()
 
         products1_2_updated=Product.objects.get(fridge=self.fridge1, barcode="1234567890124", expire_date=self.tomorrow)
-        self.assertEqual(products1_2_updated.toCharity, True)
+        self.assertTrue(products1_2_updated.toCharity)
   
 
 #----------------------GET TEMP/HUM PARAMETERS----------------------------------------
