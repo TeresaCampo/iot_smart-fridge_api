@@ -38,7 +38,7 @@ class Product(models.Model):
     toCharity = models.BooleanField(default=False)
     
     def __str__(self):
-            return f"{self.name} (Barcode: {self.barcode}) - Expires on {self.expire_date}"
+            return f"fridge {self.fridge.fridge_id}, {self.name} (Barcode: {self.barcode}) - Expires on {self.expire_date}"
 
 #customized user
 class CustomUserManager(BaseUserManager):
