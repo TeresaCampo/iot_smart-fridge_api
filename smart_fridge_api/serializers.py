@@ -69,6 +69,13 @@ class FridgeSerializer(serializers.ModelSerializer):
         model = Fridge
         fields = ['fridge_id', 'longitude', 'latitude', 'toCharity_updated_today']
 
+#to not check if Models contraints(example pk) are validated, to focus only on fields
+class FridgeFieldValidationSerializer(serializers.Serializer):
+    fridge_id = serializers.IntegerField()
+    longitude = serializers.FloatField() 
+    latitude = serializers.FloatField()
+    toCharity_updated_today = serializers.BooleanField(required=False)
+
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product

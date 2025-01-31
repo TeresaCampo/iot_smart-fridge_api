@@ -2,7 +2,7 @@ from datetime import date, timedelta
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.decorators import api_view, permission_classes
 from .models import Fridge, Product,Parameter
-from .serializers import FridgeSerializer, ProductSerializer, ParameterSerializer, CustomUserSerializer, CustomUserSignUpSerializer, LoginSerializer, ProductToCharitySerializer
+from .serializers import *
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -29,18 +29,32 @@ class FridgeManager(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
     
     @swagger_auto_schema(
-        operation_description="For admin(superuser only)\nCreate a new fridge.",
-        request_body=FridgeSerializer,
+        operation_description="For admin(superuser only)\nCreate a new fridge. or update latitude and longitude.",
+        request_body=FridgeFieldValidationSerializer,
         responses={201: 'New fridge created', 400: 'Bad request body', 401: 'Not authenticated as superuser'}
     )
     def post(self, request):
-            serializer=FridgeSerializer(data=request.data)
+        field_serializer=FridgeFieldValidationSerializer(data=request.data)
+        model_serializer=FridgeSerializer(data=request.data)
 
-            if serializer.is_valid():
-                serializer.save()
-                return Response(status=status.HTTP_201_CREATED)
-            else:
-                return Response(status= status.HTTP_400_BAD_REQUEST)
+        #if fridge already exists, update latitude and longitude
+        if field_serializer.is_valid():
+            new_fridge=field_serializer.validated_data
+            existing_fridge = Fridge.objects.filter(fridge_id=new_fridge["fridge_id"]).first()
+
+            if existing_fridge:
+                existing_fridge.latitude=new_fridge["latitude"]
+                existing_fridge.longitude=new_fridge["longitude"]
+                existing_fridge.save()
+                return Response(status=status.HTTP_200_OK) 
+        #if fridge doesn't exist, create it
+        if model_serializer.is_valid():
+            model_serializer.save()
+            return Response(status=status.HTTP_201_CREATED)
+        
+        #if request body doesn't contain right fields
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+        
 
 #----------------------GET INFO ABOUT A FRIDGE----------------------------------------
 class FridgeDetail(APIView):

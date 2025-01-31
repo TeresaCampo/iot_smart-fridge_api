@@ -16,7 +16,7 @@ class FridgeListTestCase(APITestCase):
         self.client=create_super_user(self.client)
 
     def test_get_fridges(self):
-        #create this obgjects in the test database
+        #create this object in the test database
         self.fridge1 = Fridge.objects.create(fridge_id=1,longitude=9.186516,latitude=45.465454)
         self.fridge2 = Fridge.objects.create(fridge_id=2,longitude=9.186516,latitude=45.465454)
 
@@ -28,6 +28,25 @@ class FridgeListTestCase(APITestCase):
         self.assertEqual(response.data, serializer.data)
 
      
+    def test_update_fridges_valid_data(self):
+        fridge1 = Fridge.objects.create(fridge_id=1,longitude=9.186516,latitude=45.465454)
+
+        data={
+            'fridge_id':1,
+            'longitude':  9.18652,
+            'latitude':45.465452
+        }
+        response = self.client.post(self.url, data)
+        fridge = Fridge.objects.get(fridge_id=data['fridge_id'])
+        if response.status_code != 200:
+            print("Response Status Code:", response.status_code)
+            print("Response Content:", response.json())
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        data_to_check=FridgeSerializer(fridge).data
+        data_to_check.pop('toCharity_updated_today')
+        self.assertEqual(data_to_check,data)
+
     def test_post_fridges_valid_data(self):
         data={
             'fridge_id':5,
@@ -36,7 +55,6 @@ class FridgeListTestCase(APITestCase):
         }
         response = self.client.post(self.url, data)
         fridge = Fridge.objects.get(fridge_id=data['fridge_id'])
-
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         
         data_to_check=FridgeSerializer(fridge).data
@@ -54,17 +72,6 @@ class FridgeListTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(Fridge.objects.filter(fridge_id=data['fridge_i']).exists())
 
-    def test_post_fridges_already_existing(self):
-        self.fridge1 = Fridge.objects.create(fridge_id=1,longitude=9.186516,latitude=45.465454)
-        data={
-            'fridge_id':1,
-            'longitude': 9.18651,
-            'latitude':45.465454
-        }
-        response = self.client.post(self.url, data)
-        serializer=FridgeSerializer(data=data)
-
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 #----------------------GET INFO ABOUT A FRIDGE----------------------------------------
 class FridgeDetailTestCase(APITestCase):
