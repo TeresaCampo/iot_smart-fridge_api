@@ -47,7 +47,22 @@ python3 manage.py runserver 0.0.0.0:8080
 
 http://172.20.10.4:8080/api/
 
-## FARE RICHIESTE COME SUPEUTENTE AUTENTICATO
+## PER FARE RICHIESTE COME SUPEUTENTE AUTENTICATO
 
 Inserire nell'header della richiesta 'Token 62aa1bd2271eedd587232a3259f262fa5b578d88'
-(Dopo aver fatto pull del progetto perchè il database si è aggiornato)
+
+## PER MANDARE DATI AL DATABASE
+
+```python
+def send_to_server(temperature, humidity):
+    url = "http://127.0.0.1:8000/api/...
+    data = {
+        ...
+    }
+    headers = {
+        'accept': 'application/json',
+        'Content-Type': 'application/json',
+        'X-CSRFTOKEN': '6S1eiOl9Kvu3MIIezl9EDYznqvILwaCRU9hNYkBVtu8Z0sH6NMTBkHp3ZAfrnqdS',
+        'Authorization': 'Token 62aa1bd2271eedd587232a3259f262fa5b578d88'
+    }
+```
