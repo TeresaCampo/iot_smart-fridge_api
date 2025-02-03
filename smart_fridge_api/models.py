@@ -8,8 +8,8 @@ def get_today_date():
 
 class Fridge(models.Model):
     fridge_id = models.IntegerField(primary_key=True)
-    latitude = models.FloatField(null=True)  
-    longitude = models.FloatField(null=True)  
+    latitude = models.CharField(max_length=25,null=True)  
+    longitude = models.CharField(max_length=25,null=True)  
     toCharity_updated_today = models.BooleanField(default=False)
     
     def __str__(self):

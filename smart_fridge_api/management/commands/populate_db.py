@@ -14,11 +14,11 @@ class Command(BaseCommand):
         Product.objects.all().delete()
         Parameter.objects.all().delete()
         #delete extra fridges
-        Fridge.objects.exclude(fridge_id__in=[1, 2, 3]).delete()
+        Fridge.objects.exclude(fridge_id__in=[1, 2, 3,4]).delete()
 
         #create new products and set toCharity_update_today to default for every fridge
         fridge1 = Fridge.objects.get(fridge_id=1)
-        Fridge.objects.filter(fridge_id=1).update(toCharity_updated_today=False)
+        Fridge.objects.filter(fridge_id=1).update(toCharity_updated_today=True)
         Product.objects.create(fridge=fridge1,barcode="5678930", expire_date=today+timedelta(days=4),name="Latte")      #not expiring yet
         Product.objects.create(fridge=fridge1,barcode="2307450", expire_date=tomorrow,name="Burro")                     #expiring tomorrow
         Product.objects.create(fridge=fridge1,barcode="3429762", expire_date=today+timedelta(days=3),name="Mozzarelle") #not expiring yet  
@@ -27,12 +27,17 @@ class Command(BaseCommand):
         Fridge.objects.filter(fridge_id=2).update(toCharity_updated_today=True)
         Product.objects.create(fridge=fridge2,barcode="3429762", expire_date=tomorrow,name="Mozzarelle")                #expiring tomorrow
         Product.objects.create(fridge=fridge2,barcode="5678930", expire_date=yesterday,name="Latte")                    #expired
-        Product.objects.create(fridge=fridge2,barcode="7843259", expire_date=today+timedelta(days=3),name="Uova")       #not epxpiring yet
+        Product.objects.create(fridge=fridge2,barcode="7843259", expire_date=today,name="Uova", toCharity=True)       #not epxpiring yet
             
         fridge3 = Fridge.objects.get(fridge_id=3)
-        Fridge.objects.filter(fridge_id=1).update(toCharity_updated_today=True)
-        Product.objects.create(fridge=fridge3,barcode="67029817", expire_date=today,name="Philadelphia")                #expiring today
+        Fridge.objects.filter(fridge_id=3).update(toCharity_updated_today=True)
+        Product.objects.create(fridge=fridge3,barcode="67029817", expire_date=today,name="Philadelphia",toCharity=True)                #expiring today
         Product.objects.create(fridge=fridge3,barcode="5678930", expire_date=tomorrow,name="Latte")                     #expiring tomorrow
+
+        fridge4 = Fridge.objects.get(fridge_id=4)
+        Fridge.objects.filter(fridge_id=4).update(toCharity_updated_today=True)
+        Product.objects.create(fridge=fridge4,barcode="67029817", expire_date=today,name="Philadelphia", toCharity=True)                #expiring today
+
 
         self.stdout.write(self.style.SUCCESS("Database initialized with default values"))
         
