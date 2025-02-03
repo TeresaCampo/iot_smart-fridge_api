@@ -190,6 +190,7 @@ class FridgeExpiringProduct(APIView):
             return Response( status=status.HTTP_200_OK)
 
 #----------------------GET TEMP/HUM PARAMETERS----------------------------------------
+@permission_classes([AllowAny])
 class FridgeParameter(APIView):
     @swagger_auto_schema(
         operation_description="Retrive the last (most recent) 20 sampled parameters",
