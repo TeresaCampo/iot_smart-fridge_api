@@ -18,7 +18,7 @@ class Command(BaseCommand):
 
         #create new products and set toCharity_update_today to default for every fridge
         fridge1 = Fridge.objects.get(fridge_id=1)
-        Fridge.objects.filter(fridge_id=1).update(toCharity_updated_today=True)
+        Fridge.objects.filter(fridge_id=1).update(toCharity_updated_today=False)
         Product.objects.create(fridge=fridge1,barcode="5678930", expire_date=today+timedelta(days=4),name="Latte")      #not expiring yet
         Product.objects.create(fridge=fridge1,barcode="2307450", expire_date=tomorrow,name="Burro")                     #expiring tomorrow
         Product.objects.create(fridge=fridge1,barcode="3429762", expire_date=today+timedelta(days=3),name="Mozzarelle") #not expiring yet  
