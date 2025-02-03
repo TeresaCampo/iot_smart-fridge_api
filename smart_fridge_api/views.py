@@ -156,6 +156,7 @@ class FridgeExpiringProduct(APIView):
 
         if(existing_fridge.toCharity_updated_today==False):  #check expiring products
             existing_fridge.last_charity_update=True
+            existing_fridge.save()
 
             tomorrow = date.today() + timedelta(days=1)
             product = Product.objects.filter(fridge=existing_fridge,expire_date=tomorrow)
