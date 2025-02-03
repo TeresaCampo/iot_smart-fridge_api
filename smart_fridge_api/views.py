@@ -155,7 +155,7 @@ class FridgeExpiringProduct(APIView):
         existing_fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
 
         if(existing_fridge.toCharity_updated_today==False):  #check expiring products
-            existing_fridge.last_charity_update=True
+            existing_fridge.toCharity_updated_today=True
             existing_fridge.save()
 
             tomorrow = date.today() + timedelta(days=1)
