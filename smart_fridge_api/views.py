@@ -108,7 +108,9 @@ class FridgeProductDetail(APIView):
         fridge=get_object_or_404(Fridge,fridge_id=pk_fridge)
 
         #check if product exists
-        product_to_be_deleted = Product.objects.filter(fridge=fridge, barcode=barcode, expire_date=expire_date).first()
+        #product_to_be_deleted = Product.objects.filter(fridge=fridge, barcode=barcode, expire_date=expire_date).first()
+        product_to_be_deleted = Product.objects.filter(fridge=fridge, barcode=barcode).order_by('-expire_date').first()
+
         if product_to_be_deleted is None:
             return Response({'message': 'Product is not present in the database.'}, status=status.HTTP_404_NOT_FOUND)
         
