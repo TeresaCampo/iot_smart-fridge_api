@@ -117,7 +117,8 @@ def print_result(best_route, min_distance, token_bot, chat_id):
 
 # Funzione principale per eseguire il programma
 def start(waypoints):
-    start = "44.641671341043946, 10.944602679703342"
+    #start = "44.641671341043946, 10.944602679703342"
+    start = "44.641671341043946, 10.947602679703342"
     end = start
     token_bot = '7866846279:AAHyRghb2w2oP304RJrt3KSb4IGgVRODVxg' # Sostituisci con il token del tuo bot
     chat_id = "-4728044238" # id grupp id chat me stesso->"6655843792"
